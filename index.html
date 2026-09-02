@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Simple Transfer - Your notes, synced across all devices in real-time. Share notes with your team using a single username.">
+  <title>Simple Transfer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #000000;
+      --text: #ffffff;
+      --text-secondary: #888888;
+      --text-tertiary: #555555;
+      --accent: #ff0000;
+      --divider: #222222;
+      --hover: #111111;
+      --success: #00ff00;
+    }
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .app-container { display: flex; height: 100vh; }
+    .sidebar {
+      width: 260px; background: var(--bg); border-right: 1px solid var(--divider);
+      display: flex; flex-direction: column; overflow: hidden; transition: transform 0.2s;
+    }
+    .sidebar-header { padding: 20px; border-bottom: 1px solid var(--divider); }
+    .logo { display: flex; align-items: center; gap: 8px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; }
+    .logo-dot { width: 5px; height: 5px; background: var(--accent); border-radius: 50%; }
+    .user-section { padding: 15px 20px; border-bottom: 1px solid var(--divider); display: flex; align-items: center; justify-content: space-between; }
+    .user-info { display: flex; align-items: center; gap: 10px; }
+    .user-initial {
+      width: 24px; height: 24px; background: var(--bg); border: 1px solid var(--divider);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-secondary);
+    }
+    .user-name { font-size: 12px; color: var(--text); font-family: 'IBM Plex Mono', monospace; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .logout-btn { background: none; border: none; color: var(--text-tertiary); cursor: pointer; font-size: 11px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; padding: 3px 6px; border-radius: 2px; }
+    .logout-btn:hover { color: var(--accent); background: var(--hover); }
+    .search-container { padding: 15px 20px; border-bottom: 1px solid var(--divider); position: relative; }
+    .search-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--divider); color: var(--text); font-size: 12px; padding: 6px 0; font-family: 'IBM Plex Mono', monospace; }
+    .search-input::placeholder { color: var(--text-tertiary); }
+    .search-input:focus { outline: none; border-bottom-color: var(--accent); }
+    .search-clear { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-tertiary); cursor: pointer; font-size: 12px; display: none; padding: 2px; }
+    .search-clear:hover { color: var(--accent); }
+    .notes-header { padding: 10px 20px; border-bottom: 1px solid var(--divider); display: flex; align-items: center; justify-content: space-between; font-size: 10px; font-family: 'IBM Plex Mono', monospace; color: var(--text-tertiary); }
+    .notes-count { letter-spacing: 0.5px; }
+    .sort-toggle { display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none; }
+    .sort-toggle:hover { color: var(--text-secondary); }
+    .sort-label { letter-spacing: 0.5px; text-transform: uppercase; }
+    .new-note-btn {
+      padding: 10px 20px; background: transparent; border: 1px solid var(--divider);
+      color: var(--text-secondary); cursor: pointer; font-size: 11px; font-family: 'IBM Plex Mono', monospace;
+      letter-spacing: 0.5px; text-transform: uppercase; width: calc(100% - 40px); margin: 8px 20px;
+      text-align: left; transition: all 0.15s;
+    }
+    .new-note-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .new-note-btn:active { background: var(--hover); }
+    .notes-list { flex: 1; overflow-y: auto; }
+    .notes-list::-webkit-scrollbar { width: 4px; }
+    .notes-list::-webkit-scrollbar-track { background: transparent; }
+    .notes-list::-webkit-scrollbar-thumb { background: var(--divider); border-radius: 2px; }
+    .note-item {
+      padding: 10px 20px; cursor: pointer; border-bottom: 1px solid var(--divider);
+      display: flex; align-items: flex-start; gap: 8px; transition: background 0.1s; position: relative;
+    }
+    .note-item:hover { background: var(--hover); }
+    .note-item.selected { background: #050505; }
+    .note-item.pinned { background: rgba(255, 0, 0, 0.03); }
+    .note-item.selected.pinned { background: rgba(255, 0, 0, 0.05); }
+    .note-pin {
+      width: 12px; height: 12px; flex-shrink: 0; cursor: pointer; opacity: 0;
+      transition: opacity 0.1s; display: flex; align-items: center; justify-content: center;
+      font-size: 8px; color: var(--text-tertiary); font-family: 'IBM Plex Mono', monospace;
+    }
+    .note-item:hover .note-pin, .note-item.pinned .note-pin { opacity: 1; }
+    .note-pin.pinned { color: var(--accent); }
+    .note-pin:hover { color: var(--accent); }
+    .note-content { flex: 1; min-width: 0; }
+    .note-title { font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Inter', sans-serif; font-weight: 500; }
+    .note-preview { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; font-family: 'IBM Plex Mono', monospace; }
+    .note-delete { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-tertiary); cursor: pointer; font-size: 11px; opacity: 0; transition: opacity 0.1s; padding: 2px; }
+    .note-item:hover .note-delete { opacity: 1; }
+    .note-delete:hover { color: var(--accent); }
+    .status-indicator {
+      position: fixed; bottom: 16px; right: 16px; width: 10px; height: 10px;
+      background: var(--text-tertiary); border-radius: 50%; z-index: 1000; box-shadow: 0 0 4px currentColor;
+    }
+    .status-indicator.online { background: var(--success); }
+    .status-indicator.offline { background: var(--accent); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .top-bar { height: 38px; background: var(--bg); border-bottom: 1px solid var(--divider); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; }
+    .top-bar-left { display: flex; align-items: center; gap: 16px; }
+    .menu-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 14px; display: none; padding: 4px; }
+    .save-status { font-size: 10px; color: var(--text-tertiary); font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; }
+    .top-bar-right { display: flex; align-items: center; gap: 8px; }
+    .action-btn {
+      background: none; border: 1px solid var(--divider); color: var(--text-tertiary); cursor: pointer;
+      font-size: 10px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px;
+      padding: 4px 8px; border-radius: 2px; transition: all 0.15s;
+    }
+    .action-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .editor-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .editor { flex: 1; padding: 40px; overflow-y: auto; }
+    .editor::-webkit-scrollbar { width: 4px; }
+    .editor::-webkit-scrollbar-track { background: transparent; }
+    .editor::-webkit-scrollbar-thumb { background: var(--divider); border-radius: 2px; }
+    .title-input {
+      width: 100%; background: transparent; border: none; color: var(--text);
+      font-size: 24px; font-weight: 700; font-family: 'Inter', sans-serif;
+      padding: 0; margin: 0 0 20px 0; outline: none; resize: none;
+    }
+    .title-input::placeholder { color: var(--text-tertiary); }
+    .content-input {
+      width: 100%; background: transparent; border: none; color: var(--text);
+      font-size: 14px; line-height: 1.6; font-family: 'Inter', sans-serif;
+      padding: 0; margin: 0; outline: none; resize: none;
+    }
+    .content-input::placeholder { color: var(--text-tertiary); }
+    .editor-footer { padding: 12px 16px; border-top: 1px solid var(--divider); display: flex; justify-content: space-between; align-items: center; }
+    .char-count { font-size: 10px; color: var(--text-tertiary); font-family: 'IBM Plex Mono', monospace; }
+    .empty-state { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-tertiary); font-size: 12px; font-family: 'IBM Plex Mono', monospace; }
+    .auth-container { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px; }
+    .auth-panel {
+      width: 320px; background: var(--bg); border: 1px solid var(--divider);
+      padding: 40px; display: flex; flex-direction: column; gap: 24px;
+    }
+    .auth-header { text-align: center; }
+    .auth-title { font-size: 14px; font-weight: 700; font-family: 'Inter', sans-serif; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .auth-subtitle { font-size: 11px; color: var(--text-tertiary); font-family: 'IBM Plex Mono', monospace; }
+    .auth-form { display: flex; flex-direction: column; gap: 16px; }
+    .input-group { display: flex; flex-direction: column; gap: 6px; }
+    .input-label { font-size: 10px; color: var(--text-secondary); font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; text-transform: uppercase; }
+    .input-field {
+      background: transparent; border: 1px solid var(--divider); color: var(--text);
+      font-size: 12px; padding: 8px 12px; font-family: 'IBM Plex Mono', monospace;
+      outline: none; transition: border-color 0.15s;
+    }
+    .input-field::placeholder { color: var(--text-tertiary); }
+    .input-field:focus { border-color: var(--accent); }
+    .auth-btn {
+      background: transparent; border: 1px solid var(--divider); color: var(--text-secondary);
+      cursor: pointer; font-size: 11px; font-family: 'IBM Plex Mono', monospace;
+      letter-spacing: 0.5px; text-transform: uppercase; padding: 10px 16px;
+      transition: all 0.15s; margin-top: 4px;
+    }
+    .auth-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .auth-btn:active { background: var(--hover); }
+    .auth-divider { display: flex; align-items: center; gap: 12px; }
+    .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--divider); }
+    .auth-divider span { font-size: 10px; color: var(--text-tertiary); font-family: 'IBM Plex Mono', monospace; }
+    .social-auth { display: flex; flex-direction: column; gap: 12px; }
+    .social-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      background: transparent; border: 1px solid var(--divider); color: var(--text-secondary);
+      cursor: pointer; font-size: 11px; font-family: 'IBM Plex Mono', monospace;
+      letter-spacing: 0.5px; text-transform: uppercase; padding: 10px 16px;
+      transition: all 0.15s;
+    }
+    .social-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .social-icon { width: 16px; height: 16px; }
+    .auth-toggle { text-align: center; font-size: 11px; color: var(--text-tertiary); font-family: 'IBM Plex Mono', monospace; }
+    .auth-toggle button { background: none; border: none; color: var(--text-secondary); cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 4px; }
+    .auth-toggle button:hover { color: var(--accent); }
+    .error-message { color: var(--accent); font-size: 11px; font-family: 'IBM Plex Mono', monospace; text-align: center; min-height: 16px; }
+    .toast {
+      position: fixed; bottom: 48px; right: 16px; background: var(--hover);
+      border: 1px solid var(--divider); color: var(--text-secondary);
+      font-size: 11px; font-family: 'IBM Plex Mono', monospace; padding: 8px 12px;
+      border-radius: 2px; z-index: 1001; opacity: 0; transform: translateY(10px);
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .mobile-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; }
+    .mobile-overlay.show { display: block; }
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); z-index: 1000; }
+      .sidebar.open { transform: translateX(0); }
+      .menu-btn { display: block; }
+      .top-bar-left { gap: 8px; }
+      .editor { padding: 20px; }
+      .title-input { font-size: 18px; }
+      .content-input { font-size: 13px; }
+      .note-delete { right: 12px; }
+      .note-item { padding: 10px 12px; }
+      .new-note-btn { margin: 8px 12px; }
+      .search-container { padding: 12px; }
+      .user-section { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <div class="logo-dot"></div>
+          SIMPLE TRANSFER
+        </div>
+      </div>
+      <div class="user-section" id="userSection" style="display: none;">
+        <div class="user-info">
+          <div class="user-initial" id="userInitial">?</div>
+          <span class="user-name" id="userName">User</span>
+        </div>
+        <button class="logout-btn" id="logoutBtn">LOGOUT</button>
+      </div>
+      <div class="search-container">
+        <input type="text" class="search-input" id="searchInput" placeholder="SEARCH NOTES...">
+        <button class="search-clear" id="searchClear">X</button>
+      </div>
+      <div class="notes-header">
+        <span class="notes-count" id="notesCount">0 NOTES</span>
+        <div class="sort-toggle" id="sortToggle">
+          <span class="sort-label" id="sortLabel">RECENT</span>
+        </div>
+      </div>
+      <button class="new-note-btn" id="newNoteBtn">+ NEW NOTE</button>
+      <div class="notes-list" id="notesList"></div>
+    </div>
+    <div class="main-content">
+      <div class="top-bar">
+        <div class="top-bar-left">
+          <button class="menu-btn" id="menuBtn">&#9776;</button>
+          <span class="save-status" id="saveStatus">SELECT A NOTE TO EDIT</span>
+        </div>
+        <div class="top-bar-right">
+          <button class="action-btn" id="copyTitleBtn" style="display: none;">COPY TITLE</button>
+          <button class="action-btn" id="copyContentBtn" style="display: none;">COPY CONTENT</button>
+          <button class="action-btn" id="exportBtn" style="display: none;">EXPORT</button>
+        </div>
+      </div>
+      <div class="editor-container">
+        <div class="editor" id="editor">
+          <div class="empty-state" id="emptyState">SELECT A NOTE TO EDIT</div>
+          <textarea class="title-input" id="titleInput" placeholder="Untitled" style="display: none;"></textarea>
+          <textarea class="content-input" id="contentInput" placeholder="Start typing..." style="display: none;"></textarea>
+        </div>
+        <div class="editor-footer">
+          <span class="char-count" id="charCount"></span>
+        </div>
+      </div>
+    </div>
+    <div class="auth-container" id="authContainer">
+      <div class="auth-panel">
+        <div class="auth-header">
+          <div class="logo" style="justify-content: center;">
+            <div class="logo-dot"></div>
+            SIMPLE TRANSFER
+          </div>
+          <p class="auth-subtitle">Your notes, synced across all devices</p>
+        </div>
+        <form class="auth-form" id="authForm">
+          <div class="input-group">
+            <label class="input-label" id="authLabel">USERNAME</label>
+            <input type="text" class="input-field" id="authUsername" placeholder="Enter username" autocomplete="username">
+          </div>
+          <div class="input-group">
+            <label class="input-label">PASSWORD</label>
+            <input type="password" class="input-field" id="authPassword" placeholder="Enter password" autocomplete="current-password">
+          </div>
+          <button type="submit" class="auth-btn" id="authSubmit">CREATE ACCOUNT</button>
+          <div class="error-message" id="authError"></div>
+        </form>
+        <div class="auth-divider">
+          <span>OR</span>
+        </div>
+        <div class="social-auth">
+          <button type="button" class="social-btn google-btn" id="googleSignIn">
+            <svg class="social-icon" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            SIGN IN WITH GOOGLE
+          </button>
+        </div>
+        <div class="auth-toggle">
+          <span id="authToggleText">ALREADY HAVE AN ACCOUNT?</span>
+          <button type="button" id="authToggleBtn">LOGIN</button>
+        </div>
+      </div>
+    </div>
+    <div class="status-indicator" id="statusIndicator"></div>
+    <div class="toast" id="toast"></div>
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+  </div>
+
+  <script>
+    // ==================== CONFIGURATION ====================
+    const USERNAME_DOMAIN = 'simpletransfer.app';
+    const SAVE_DEBOUNCE_MS = 500;
+    const SORT_MODES = ['recent', 'created', 'az'];
+    const SAVE_STATUS = {
+      IDLE: 'SELECT A NOTE TO EDIT',
+      SYNCED: 'SYNCED',
+      SAVING: 'SAVING...',
+      SAVED: 'SAVED',
+      ERROR: 'ERROR',
+      OFFLINE: 'OFFLINE'
+    };
+
+    // ==================== STATE ====================
+    let state = {
+      user: null,
+      notes: [],
+      selectedNoteId: null,
+      searchQuery: '',
+      sortMode: 'recent',
+      saveStatus: SAVE_STATUS.IDLE,
+      isOnline: true,
+      isMobile: false,
+      authMode: 'register',
+      lastNoteId: null
+    };
+
+    // ==================== FIREBASE CONFIG ====================
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // ==================== DOM ELEMENTS ====================
+    const elements = {
+      sidebar: document.getElementById('sidebar'),
+      userSection: document.getElementById('userSection'),
+      userInitial: document.getElementById('userInitial'),
+      userName: document.getElementById('userName'),
+      logoutBtn: document.getElementById('logoutBtn'),
+      searchInput: document.getElementById('searchInput'),
+      searchClear: document.getElementById('searchClear'),
+      notesCount: document.getElementById('notesCount'),
+      sortToggle: document.getElementById('sortToggle'),
+      sortLabel: document.getElementById('sortLabel'),
+      newNoteBtn: document.getElementById('newNoteBtn'),
+      notesList: document.getElementById('notesList'),
+      menuBtn: document.getElementById('menuBtn'),
+      saveStatus: document.getElementById('saveStatus'),
+      copyTitleBtn: document.getElementById('copyTitleBtn'),
+      copyContentBtn: document.getElementById('copyContentBtn'),
+      exportBtn: document.getElementById('exportBtn'),
+      editor: document.getElementById('editor'),
+      emptyState: document.getElementById('emptyState'),
+      titleInput: document.getElementById('titleInput'),
+      contentInput: document.getElementById('contentInput'),
+      charCount: document.getElementById('charCount'),
+      authContainer: document.getElementById('authContainer'),
+      authForm: document.getElementById('authForm'),
+      authLabel: document.getElementById('authLabel'),
+      authUsername: document.getElementById('authUsername'),
+      authPassword: document.getElementById('authPassword'),
+      authSubmit: document.getElementById('authSubmit'),
+      authError: document.getElementById('authError'),
+      googleSignIn: document.getElementById('googleSignIn'),
+      authToggleText: document.getElementById('authToggleText'),
+      authToggleBtn: document.getElementById('authToggleBtn'),
+      statusIndicator: document.getElementById('statusIndicator'),
+      toast: document.getElementById('toast'),
+      mobileOverlay: document.getElementById('mobileOverlay')
+    };
+
+    // ==================== FIREBASE INITIALIZATION ====================
+    let firebaseApp = null;
+    let firebaseAuth = null;
+    let firebaseDatabase = null;
+    let notesRef = null;
+    let unsubscribeAuth = null;
+    let unsubscribeNotes = null;
+
+    function initializeFirebase() {
+      try {
+        firebaseApp = firebase.initializeApp(firebaseConfig);
+        firebaseAuth = firebase.auth();
+        firebaseDatabase = firebase.database();
+
+        firebaseDatabase.enablePersistence().catch((err) => {
+          if (err.code === 'failed-precondition') {
+            // Multiple tabs open
+          } else if (err.code === 'unimplemented') {
+            // Browser doesn't support
+          }
+        });
+
+        unsubscribeAuth = firebaseAuth.onAuthStateChanged(handleAuthStateChanged);
+
+        firebaseDatabase.ref('.info/connected').on('value', (snapshot) => {
+          state.isOnline = snapshot.val() === true;
+          updateStatusIndicator();
+          if (state.isOnline) {
+            showToast('ONLINE');
+          } else {
+            showToast('OFFLINE');
+          }
+        });
+
+        console.log('Firebase initialized successfully');
+      } catch (error) {
+        console.error('Firebase initialization error:', error);
+      }
+    }
+
+    // ==================== AUTH HANDLERS ====================
+    function handleAuthStateChanged(user) {
+      if (user) {
+        state.user = {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName || user.email.split('@')[0]
+        };
+
+        loadUserNotes(user.uid);
+
+        elements.authContainer.style.display = 'none';
+        elements.userSection.style.display = 'flex';
+
+        updateUserDisplay();
+
+        if (state.lastNoteId) {
+          selectNote(state.lastNoteId);
+        }
+
+        showToast('WELCOME BACK');
+      } else {
+        state.user = null;
+        state.notes = [];
+        state.selectedNoteId = null;
+
+        elements.authContainer.style.display = 'flex';
+        elements.userSection.style.display = 'none';
+
+        clearEditor();
+
+        if (unsubscribeNotes) {
+          unsubscribeNotes();
+          unsubscribeNotes = null;
+        }
+
+        resetAuthForm();
+      }
+
+      updateUI();
+    }
+
+    function updateUserDisplay() {
+      if (state.user) {
+        const initial = state.user.displayName.charAt(0).toUpperCase();
+        elements.userInitial.textContent = initial;
+        elements.userName.textContent = state.user.displayName;
+      }
+    }
+
+    function usernameToEmail(username) {
+      return `${username}@${USERNAME_DOMAIN}`;
+    }
+
+    async function handleAuthSubmit(e) {
+      e.preventDefault();
+
+      const username = elements.authUsername.value.trim();
+      const password = elements.authPassword.value;
+
+      if (!username || !password) {
+        showAuthError('Please enter both username and password');
+        return;
+      }
+
+      if (state.authMode === 'register') {
+        const email = usernameToEmail(username);
+        try {
+          await firebaseAuth.createUserWithEmailAndPassword(email, password);
+          showAuthError('');
+        } catch (error) {
+          showAuthError(error.message.replace('Firebase: ', ''));
+        }
+      } else {
+        let email = username;
+        if (!email.includes('@')) {
+          email = usernameToEmail(username);
+        }
+
+        try {
+          await firebaseAuth.signInWithEmailAndPassword(email, password);
+          showAuthError('');
+        } catch (error) {
+          showAuthError(error.message.replace('Firebase: ', ''));
+        }
+      }
+    }
+
+    async function handleGoogleSignIn() {
+      try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        await firebaseAuth.signInWithPopup(provider);
+      } catch (error) {
+        showAuthError(error.message.replace('Firebase: ', ''));
+      }
+    }
+
+    function handleLogout() {
+      firebaseAuth.signOut().catch((error) => {
+        console.error('Logout error:', error);
+      });
+    }
+
+    function toggleAuthMode() {
+      state.authMode = state.authMode === 'register' ? 'login' : 'register';
+      elements.authSubmit.textContent = state.authMode === 'register' ? 'CREATE ACCOUNT' : 'LOGIN';
+      elements.authLabel.textContent = state.authMode === 'register' ? 'USERNAME' : 'EMAIL';
+      elements.authUsername.placeholder = state.authMode === 'register' ? 'Enter username' : 'Enter email';
+      elements.authToggleText.textContent = state.authMode === 'register' ? 'ALREADY HAVE AN ACCOUNT?' : 'NEED AN ACCOUNT?';
+      elements.authToggleBtn.textContent = state.authMode === 'register' ? 'LOGIN' : 'CREATE ACCOUNT';
+      showAuthError('');
+    }
+
+    function resetAuthForm() {
+      elements.authForm.reset();
+      state.authMode = 'register';
+      elements.authSubmit.textContent = 'CREATE ACCOUNT';
+      elements.authLabel.textContent = 'USERNAME';
+      elements.authUsername.placeholder = 'Enter username';
+      elements.authToggleText.textContent = 'ALREADY HAVE AN ACCOUNT?';
+      elements.authToggleBtn.textContent = 'LOGIN';
+      showAuthError('');
+    }
+
+    function showAuthError(message) {
+      elements.authError.textContent = message;
+    }
+
+    // ==================== NOTES HANDLERS ====================
+    function loadUserNotes(uid) {
+      if (unsubscribeNotes) {
+        unsubscribeNotes();
+      }
+
+      notesRef = firebaseDatabase.ref(`notes/${uid}`);
+
+      unsubscribeNotes = notesRef.on('value', (snapshot) => {
+        const notesData = snapshot.val() || {};
+        state.notes = Object.entries(notesData).map(([id, note]) => ({
+          id,
+          title: note.title || 'Untitled',
+          content: note.content || '',
+          pinned: note.pinned || false,
+          createdAt: note.createdAt || Date.now(),
+          updatedAt: note.updatedAt || Date.now()
+        }));
+
+        sortNotes();
+        updateNotesList();
+        updateNotesCount();
+
+        if (!state.selectedNoteId && state.notes.length > 0) {
+          selectNote(state.notes[0].id);
+        }
+      });
+    }
+
+    function sortNotes() {
+      switch (state.sortMode) {
+        case 'created':
+          state.notes.sort((a, b) => b.createdAt - a.createdAt);
+          break;
+        case 'az':
+          state.notes.sort((a, b) => a.title.localeCompare(b.title, 'en', { sensitivity: 'base' }));
+          break;
+        case 'recent':
+        default:
+          state.notes.sort((a, b) => b.updatedAt - a.updatedAt);
+          break;
+      }
+
+      state.notes.sort((a, b) => {
+        if (a.pinned === b.pinned) return 0;
+        return a.pinned ? -1 : 1;
+      });
+    }
+
+    function cycleSortMode() {
+      const currentIndex = SORT_MODES.indexOf(state.sortMode);
+      state.sortMode = SORT_MODES[(currentIndex + 1) % SORT_MODES.length];
+      elements.sortLabel.textContent = state.sortMode.toUpperCase();
+      sortNotes();
+      updateNotesList();
+    }
+
+    function createNewNote() {
+      if (!state.user) return;
+
+      const newNote = {
+        title: 'Untitled',
+        content: '',
+        pinned: false,
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+
+      const newNoteRef = notesRef.push();
+      newNoteRef.set(newNote).then(() => {
+        state.saveStatus = SAVE_STATUS.SAVED;
+        updateSaveStatus();
+        selectNote(newNoteRef.key);
+
+        setTimeout(() => {
+          elements.titleInput.focus();
+        }, 50);
+      }).catch((error) => {
+        console.error('Error creating note:', error);
+        state.saveStatus = SAVE_STATUS.ERROR;
+        updateSaveStatus();
+      });
+    }
+
+    function selectNote(noteId) {
+      if (!state.notes.find(n => n.id === noteId)) return;
+
+      state.selectedNoteId = noteId;
+      state.lastNoteId = noteId;
+
+      const note = state.notes.find(n => n.id === noteId);
+      if (note) {
+        elements.titleInput.value = note.title;
+        elements.contentInput.value = note.content;
+
+        elements.emptyState.style.display = 'none';
+        elements.titleInput.style.display = 'block';
+        elements.contentInput.style.display = 'block';
+
+        elements.copyTitleBtn.style.display = 'inline-block';
+        elements.copyContentBtn.style.display = 'inline-block';
+        elements.exportBtn.style.display = 'inline-block';
+
+        updateCharCount();
+
+        state.saveStatus = SAVE_STATUS.SYNCED;
+        updateSaveStatus();
+      }
+
+      updateNotesList();
+    }
+
+    function deleteNote(noteId, e) {
+      if (e) e.stopPropagation();
+
+      if (!state.user) return;
+
+      const noteRef = firebaseDatabase.ref(`notes/${state.user.uid}/${noteId}`);
+      noteRef.remove().then(() => {
+        if (state.selectedNoteId === noteId) {
+          clearEditor();
+        }
+        showToast('NOTE DELETED');
+      }).catch((error) => {
+        console.error('Error deleting note:', error);
+        showToast('ERROR DELETING NOTE');
+      });
+    }
+
+    function togglePinNote(noteId, e) {
+      if (e) e.stopPropagation();
+
+      if (!state.user) return;
+
+      const note = state.notes.find(n => n.id === noteId);
+      if (!note) return;
+
+      const noteRef = firebaseDatabase.ref(`notes/${state.user.uid}/${noteId}`);
+      noteRef.update({ pinned: !note.pinned }).then(() => {
+        sortNotes();
+        updateNotesList();
+      }).catch((error) => {
+        console.error('Error toggling pin:', error);
+      });
+    }
+
+    function updateNoteTitle(title) {
+      if (!state.selectedNoteId || !state.user) return;
+
+      const note = state.notes.find(n => n.id === state.selectedNoteId);
+      if (!note) return;
+
+      note.title = title;
+      note.updatedAt = Date.now();
+
+      debounceSave();
+    }
+
+    function updateNoteContent(content) {
+      if (!state.selectedNoteId || !state.user) return;
+
+      const note = state.notes.find(n => n.id === state.selectedNoteId);
+      if (!note) return;
+
+      note.content = content;
+      note.updatedAt = Date.now();
+
+      updateCharCount();
+      debounceSave();
+    }
+
+    let saveTimeout = null;
+
+    function debounceSave() {
+      if (saveTimeout) clearTimeout(saveTimeout);
+
+      state.saveStatus = SAVE_STATUS.SAVING;
+      updateSaveStatus();
+
+      saveTimeout = setTimeout(() => {
+        saveNote();
+      }, SAVE_DEBOUNCE_MS);
+    }
+
+    function saveNote() {
+      if (!state.selectedNoteId || !state.user || !state.isOnline) {
+        state.saveStatus = state.isOnline ? SAVE_STATUS.ERROR : SAVE_STATUS.OFFLINE;
+        updateSaveStatus();
+        return;
+      }
+
+      const note = state.notes.find(n => n.id === state.selectedNoteId);
+      if (!note) return;
+
+      const noteRef = firebaseDatabase.ref(`notes/${state.user.uid}/${state.selectedNoteId}`);
+      noteRef.update({
+        title: note.title,
+        content: note.content,
+        updatedAt: note.updatedAt
+      }).then(() => {
+        state.saveStatus = SAVE_STATUS.SAVED;
+        updateSaveStatus();
+        setTimeout(() => {
+          state.saveStatus = SAVE_STATUS.SYNCED;
+          updateSaveStatus();
+        }, 500);
+      }).catch((error) => {
+        console.error('Error saving note:', error);
+        state.saveStatus = SAVE_STATUS.ERROR;
+        updateSaveStatus();
+      });
+    }
+
+    function clearEditor() {
+      state.selectedNoteId = null;
+      state.lastNoteId = null;
+
+      elements.titleInput.value = '';
+      elements.contentInput.value = '';
+
+      elements.emptyState.style.display = 'block';
+      elements.titleInput.style.display = 'none';
+      elements.contentInput.style.display = 'none';
+
+      elements.copyTitleBtn.style.display = 'none';
+      elements.copyContentBtn.style.display = 'none';
+      elements.exportBtn.style.display = 'none';
+
+      elements.charCount.textContent = '';
+
+      state.saveStatus = SAVE_STATUS.IDLE;
+      updateSaveStatus();
+
+      updateNotesList();
+    }
+
+    // ==================== SEARCH HANDLERS ====================
+    function updateSearch(query) {
+      state.searchQuery = query.toLowerCase();
+      updateNotesList();
+    }
+
+    function getFilteredNotes() {
+      if (!state.searchQuery) return state.notes;
+
+      return state.notes.filter(note =>
+        note.title.toLowerCase().includes(state.searchQuery) ||
+        note.content.toLowerCase().includes(state.searchQuery)
+      );
+    }
+
+    function clearSearch() {
+      state.searchQuery = '';
+      elements.searchInput.value = '';
+      elements.searchClear.style.display = 'none';
+      updateNotesList();
+    }
+
+    // ==================== UI UPDATES ====================
+    function updateNotesList() {
+      const filteredNotes = getFilteredNotes();
+
+      elements.notesList.innerHTML = '';
+
+      if (filteredNotes.length === 0) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.className = 'empty-state';
+        emptyDiv.textContent = state.searchQuery ? 'NO NOTES FOUND' : 'NO NOTES YET';
+        emptyDiv.style.padding = '20px';
+        emptyDiv.style.textAlign = 'center';
+        elements.notesList.appendChild(emptyDiv);
+      } else {
+        filteredNotes.forEach(note => {
+          const noteEl = document.createElement('div');
+          noteEl.className = `note-item ${state.selectedNoteId === note.id ? 'selected' : ''} ${note.pinned ? 'pinned' : ''}`;
+          noteEl.onclick = () => selectNote(note.id);
+
+          noteEl.innerHTML = `
+            <div class="note-pin ${note.pinned ? 'pinned' : ''}" onclick="togglePinNote('${note.id}', event)">
+              ${note.pinned ? '&#9679;' : '&#9675;'}
+            </div>
+            <div class="note-content">
+              <div class="note-title">${escapeHtml(note.title)}</div>
+              <div class="note-preview">${escapeHtml(note.content.substring(0, 50))}</div>
+            </div>
+            <button class="note-delete" onclick="deleteNote('${note.id}', event)">DELETE</button>
+          `;
+
+          elements.notesList.appendChild(noteEl);
+        });
+      }
+
+      updateNotesCount();
+    }
+
+    function updateNotesCount() {
+      const total = state.notes.length;
+      const pinned = state.notes.filter(n => n.pinned).length;
+      elements.notesCount.textContent = `${total} NOTES${pinned > 0 ? ` (${pinned} PINNED)` : ''}`;
+    }
+
+    function updateSaveStatus() {
+      elements.saveStatus.textContent = state.saveStatus;
+    }
+
+    function updateCharCount() {
+      const content = elements.contentInput.value;
+      elements.charCount.textContent = content ? `${content.length} CHARS` : '';
+    }
+
+    function updateStatusIndicator() {
+      elements.statusIndicator.className = `status-indicator ${state.isOnline ? 'online' : 'offline'}`;
+    }
+
+    function updateUI() {
+      const isAuthed = !!state.user;
+
+      if (isAuthed) {
+        elements.authContainer.style.display = 'none';
+        elements.userSection.style.display = 'flex';
+      } else {
+        elements.authContainer.style.display = 'flex';
+        elements.userSection.style.display = 'none';
+      }
+    }
+
+    // ==================== ACTION HANDLERS ====================
+    function copyTitle() {
+      const title = elements.titleInput.value;
+      if (!title) return;
+
+      navigator.clipboard.writeText(title).then(() => {
+        showToast('TITLE COPIED');
+      }).catch(() => {
+        showToast('COPY FAILED');
+      });
+    }
+
+    function copyContent() {
+      const content = elements.contentInput.value;
+      if (!content) return;
+
+      navigator.clipboard.writeText(content).then(() => {
+        showToast('CONTENT COPIED');
+      }).catch(() => {
+        showToast('COPY FAILED');
+      });
+    }
+
+    function exportNote() {
+      if (!state.selectedNoteId) return;
+
+      const note = state.notes.find(n => n.id === state.selectedNoteId);
+      if (!note) return;
+
+      const blob = new Blob([note.content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${note.title || 'note'}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      showToast('NOTE EXPORTED');
+    }
+
+    function showToast(message) {
+      elements.toast.textContent = message;
+      elements.toast.classList.add('show');
+
+      setTimeout(() => {
+        elements.toast.classList.remove('show');
+      }, 2000);
+    }
+
+    // ==================== MOBILE HANDLERS ====================
+    function toggleSidebar() {
+      elements.sidebar.classList.toggle('open');
+      elements.mobileOverlay.classList.toggle('show');
+    }
+
+    function closeSidebar() {
+      elements.sidebar.classList.remove('open');
+      elements.mobileOverlay.classList.remove('show');
+    }
+
+    function detectMobile() {
+      state.isMobile = window.innerWidth <= 768;
+
+      if (state.isMobile) {
+        elements.sidebar.classList.remove('open');
+        elements.mobileOverlay.classList.remove('show');
+      }
+    }
+
+    // ==================== SWIPE TO DELETE (Mobile) ====================
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    function handleTouchStart(e, noteId) {
+      touchStartX = e.changedTouches[0].screenX;
+    }
+
+    function handleTouchEnd(e, noteId) {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe(noteId);
+    }
+
+    function handleSwipe(noteId) {
+      const swipeThreshold = 50;
+      const diff = touchStartX - touchEndX;
+
+      if (diff > swipeThreshold) {
+        deleteNote(noteId);
+      }
+    }
+
+    // ==================== KEYBOARD SHORTCUTS ====================
+    function handleKeyDown(e) {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        if (e.key === 'Escape') {
+          if (document.activeElement === elements.searchInput) {
+            elements.searchInput.blur();
+          }
+        }
+        if (e.key === 'Tab' && e.target === elements.titleInput) {
+          e.preventDefault();
+          elements.contentInput.focus();
+        }
+        return;
+      }
+
+      switch (e.key) {
+        case 'n':
+        case 'N':
+          createNewNote();
+          break;
+        case '/':
+          elements.searchInput.focus();
+          e.preventDefault();
+          break;
+        case 'ArrowUp':
+          navigateNotes(-1);
+          e.preventDefault();
+          break;
+        case 'ArrowDown':
+          navigateNotes(1);
+          e.preventDefault();
+          break;
+        case 'Enter':
+          if (state.selectedNoteId) {
+            elements.contentInput.focus();
+          } else if (state.notes.length > 0) {
+            selectNote(state.notes[0].id);
+          }
+          e.preventDefault();
+          break;
+        case 'Escape':
+          if (document.activeElement === elements.searchInput) {
+            elements.searchInput.blur();
+          }
+          break;
+      }
+    }
+
+    function navigateNotes(direction) {
+      const filteredNotes = getFilteredNotes();
+      if (filteredNotes.length === 0) return;
+
+      const currentIndex = filteredNotes.findIndex(n => n.id === state.selectedNoteId);
+      let newIndex = currentIndex + direction;
+
+      if (newIndex < 0) newIndex = filteredNotes.length - 1;
+      if (newIndex >= filteredNotes.length) newIndex = 0;
+
+      selectNote(filteredNotes[newIndex].id);
+    }
+
+    // ==================== UTILITY FUNCTIONS ====================
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ==================== EVENT LISTENERS ====================
+    function setupEventListeners() {
+      elements.authForm.addEventListener('submit', handleAuthSubmit);
+      elements.googleSignIn.addEventListener('click', handleGoogleSignIn);
+      elements.authToggleBtn.addEventListener('click', toggleAuthMode);
+      elements.logoutBtn.addEventListener('click', handleLogout);
+
+      elements.newNoteBtn.addEventListener('click', createNewNote);
+      elements.sortToggle.addEventListener('click', cycleSortMode);
+
+      elements.searchInput.addEventListener('input', (e) => {
+        updateSearch(e.target.value);
+        elements.searchClear.style.display = e.target.value ? 'block' : 'none';
+      });
+      elements.searchClear.addEventListener('click', clearSearch);
+
+      elements.titleInput.addEventListener('input', (e) => updateNoteTitle(e.target.value));
+      elements.contentInput.addEventListener('input', (e) => updateNoteContent(e.target.value));
+
+      elements.copyTitleBtn.addEventListener('click', copyTitle);
+      elements.copyContentBtn.addEventListener('click', copyContent);
+      elements.exportBtn.addEventListener('click', exportNote);
+
+      elements.menuBtn.addEventListener('click', toggleSidebar);
+      elements.mobileOverlay.addEventListener('click', closeSidebar);
+
+      document.addEventListener('keydown', handleKeyDown);
+
+      window.addEventListener('resize', detectMobile);
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          if (saveTimeout) {
+            clearTimeout(saveTimeout);
+            saveNote();
+          }
+        }
+      });
+
+      window.addEventListener('beforeunload', () => {
+        if (saveTimeout) {
+          clearTimeout(saveTimeout);
+          saveNote();
+        }
+      });
+    }
+
+    // ==================== INITIALIZATION ====================
+    function init() {
+      detectMobile();
+      initializeFirebase();
+      setupEventListeners();
+      updateUI();
+      updateStatusIndicator();
+      console.log('Simple Transfer initialized');
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>
