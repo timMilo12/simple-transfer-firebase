@@ -4,6 +4,8 @@
 
 A minimalist, real-time notes application that allows you to create, edit, and sync notes across all your devices instantly. Designed with a technical, minimal, premium, and elegant aesthetic inspired by Nothing OS, featuring a pure black interface with white text and red accents.
 
+**Now powered by Supabase** - A free, open-source Firebase alternative with real-time sync, authentication, and zero backend code.
+
 ## Features
 
 ### Core
@@ -44,64 +46,83 @@ A minimalist, real-time notes application that allows you to create, edit, and s
 
 ## Quick Start
 
-### Option 1: Use as-is (for testing)
-Simply open `index.html` in your browser. Note: You'll need to configure Firebase.
+### Option 1: Deploy to Vercel (Recommended - 5 minutes)
 
-### Option 2: Deploy to Vercel (Recommended)
+#### Step 1: Create Supabase Project
+1. Go to **[supabase.com](https://supabase.com/)** and sign in with GitHub
+2. Click **"New Project"** → **"Create new organization"** (if prompted)
+3. **Project name:** `simple-transfer`
+4. **Database password:** `YourStrongPassword123` (remember this!)
+5. **Region:** Choose closest to you
+6. Click **"Create project"** → Wait 2-3 minutes
 
-1. **Create a Firebase Project**
-   - Go to [Firebase Console](https://console.firebase.google.com/)
-   - Click "Add project" → Name it `Simple Transfer`
-   - Enable **Authentication** and **Realtime Database**
-   - In Authentication → Sign-in method:
-     - Enable **Email/Password**
-     - Enable **Google** (optional)
-   - In Realtime Database → Create database:
-     - Start in **test mode** (for development)
+#### Step 2: Set Up Database Table
+1. In your Supabase dashboard, click **"Table Editor"** (left sidebar)
+2. Click **"Create a new table"**
+3. **Table name:** `notes`
+4. Add these columns:
 
-2. **Get Firebase Config**
-   - Click ⚙️ **Project settings**
-   - Scroll to "Your apps" → Click **</> (Web)**
-   - Register app: Name it `Simple Transfer`
-   - Copy the `firebaseConfig` object
+| Column Name | Type | Default | Notes |
+|-------------|------|---------|-------|
+| `id` | UUID | `gen_random_uuid()` | Primary key |
+| `user_id` | UUID | | References `auth.users.id` |
+| `title` | TEXT | `'Untitled'` | |
+| `content` | TEXT | `''` | |
+| `pinned` | BOOLEAN | `false` | |
+| `created_at` | TIMESTAMPTZ | `now()` | |
+| `updated_at` | TIMESTAMPTZ | `now()` | |
 
-3. **Update Code**
-   In `index.html`, find and replace the Firebase config (around line 268):
+5. Click **"Save"**
+
+6. **Enable Row Level Security (RLS):**
+   - Click **"Authentication"** → **"Policies"** (left sidebar)
+   - Click **"Create Policy"**
+   - **Policy name:** `Allow users to access their own notes`
+   - **Table:** `notes`
+   - **Using SQL expression:**
+     ```sql
+     auth.uid() = user_id
+     ```
+   - **Enable for:** SELECT, INSERT, UPDATE, DELETE
+   - Click **"Save"**
+
+#### Step 3: Get Your Supabase Credentials
+1. In your project dashboard, click **⚙️ Project Settings** (bottom left)
+2. Click **"API"** tab
+3. **Copy these exactly:**
+   - **Project URL:** `https://your-project-ref.supabase.co`
+   - **anon key:** `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
+
+#### Step 4: Update the Code
+1. In your GitHub repository, edit `index.html`
+2. **Find lines 257-258** (search for `SUPABASE_URL`)
+3. **Replace with your credentials:**
    ```javascript
-   const firebaseConfig = {
-     apiKey: "YOUR_API_KEY",
-     authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-     databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
-     projectId: "YOUR_PROJECT_ID",
-     storageBucket: "YOUR_PROJECT_ID.appspot.com",
-     messagingSenderId: "YOUR_SENDER_ID",
-     appId: "YOUR_APP_ID"
-   };
+   const SUPABASE_URL = 'https://your-project-ref.supabase.co';
+   const SUPABASE_ANON_KEY = 'your-supabase-anon-key';
    ```
+4. **Commit the change**
 
-4. **Deploy to Vercel**
-   - Create a GitHub repository and push all files
-   - Go to [Vercel Dashboard](https://vercel.com/dashboard)
-   - Click "Add New" → "Project"
-   - Import your GitHub repository
-   - Click "Deploy"
-   - Your app will be live at `https://simple-transfer.vercel.app`
+#### Step 5: Deploy to Vercel
+1. Go to **[Vercel Dashboard](https://vercel.com/dashboard)**
+2. Click **"Add New"** → **"Project"**
+3. Click **"Import"** next to your GitHub repository (`timMilo12/simple-transfer-firebase`)
+4. Click **"Deploy"**
+5. Wait ~30 seconds...
 
-5. **Secure for Production**
-   In Firebase Console → Realtime Database → **Rules** tab, replace with:
-   ```json
-   {
-     "rules": {
-       "notes": {
-         "$uid": {
-           ".read": "auth != null && auth.uid == $uid",
-           ".write": "auth != null && auth.uid == $uid"
-         }
-       }
-     }
-   }
-   ```
-   Click **Publish**
+**🎉 Your app will be live at:** `https://simple-transfer-firebase.vercel.app`
+
+---
+
+### Option 2: Test Locally
+1. Clone this repository
+2. Create a Supabase project (Steps 1-3 above)
+3. Update `index.html` with your credentials
+4. Open `index.html` in your browser
+
+> Note: Realtime sync requires the app to be served (not just opened as a file). Use `python -m http.server 8000` or similar.
+
+---
 
 ## Project Structure
 
@@ -109,9 +130,47 @@ Simply open `index.html` in your browser. Note: You'll need to configure Firebas
 simple-transfer/
 ├── index.html          # Complete application (single file)
 ├── vercel.json         # Vercel deployment configuration
-├── firebase.json       # Firebase hosting configuration (optional)
+├── firebase.json       # (Legacy, can be removed)
 └── README.md           # Documentation and setup instructions
 ```
+
+## How It Works
+
+### Architecture
+```
+User Device → Supabase Auth → Supabase Database (PostgreSQL)
+                ↓
+          index.html (Single File)
+                ↓
+          Vercel/Netlify/GitHub Pages
+```
+
+**No backend server required.** The entire application runs in the browser, communicating directly with Supabase services.
+
+### Data Structure
+Supabase PostgreSQL table structure:
+```sql
+CREATE TABLE notes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id),
+    title TEXT DEFAULT 'Untitled',
+    content TEXT DEFAULT '',
+    pinned BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
+### Security
+- **Row Level Security (RLS)** ensures users can only access their own notes
+- **Anon key** is public and safe to use in frontend code
+- **Authentication** via Supabase Auth (email/password, Google, etc.)
+
+### Shared Accounts
+- Usernames are converted to emails using `@simpletransfer.app` domain
+- Example: Username `teamname` → Email `teamname@simpletransfer.app`
+- Multiple users can share one username/password for team collaboration
+- All team members see and edit the same notes in real-time
 
 ## Customization
 
@@ -143,68 +202,15 @@ const USERNAME_DOMAIN = 'yourdomain.com';
 ```
 
 ### Disable Google Sign-In
-Remove or comment out the Google button section in `index.html`.
-
-## How It Works
-
-### Architecture
+Remove or comment out the Google button section in `index.html`:
+```html
+<!-- <div class="social-auth">
+  <button type="button" class="social-btn google-btn" id="googleSignIn">
+    <svg class="social-icon" viewBox="0 0 24 24">...</svg>
+    SIGN IN WITH GOOGLE
+  </button>
+</div> -->
 ```
-User Device → Firebase Auth → Firebase Realtime Database
-                ↓
-          index.html (Single File)
-                ↓
-          Vercel/Netlify/GitHub Pages
-```
-
-**No backend server required.** The entire application runs in the browser.
-
-### Data Structure
-Firebase Realtime Database structure:
-```
-firebase-root/
-└── notes/
-    └── {userId}/
-        └── {noteId}/
-            ├── title: string
-            ├── content: string
-            ├── pinned: boolean
-            ├── createdAt: timestamp
-            └── updatedAt: timestamp
-```
-
-### Shared Accounts
-- Usernames are converted to emails using `@simpletransfer.app` domain
-- Example: Username `teamname` → Email `teamname@simpletransfer.app`
-- Multiple users can share one username/password for team collaboration
-- All team members see and edit the same notes in real-time
-
-## Cost
-
-**Free Tier (sufficient for personal/team use):**
-- Firebase: $0 (1GB storage, 10GB bandwidth, 50K reads/day, 20K writes/day)
-- Vercel: $0 (unlimited static sites)
-- **Total: $0/month**
-
-## Security
-
-### Production Security Rules
-```json
-{
-  "rules": {
-    "notes": {
-      "$uid": {
-        ".read": "auth != null && auth.uid == $uid",
-        ".write": "auth != null && auth.uid == $uid"
-      }
-    }
-  }
-}
-```
-
-These rules ensure:
-- Users can only read their own notes
-- Users can only write to their own notes
-- No unauthorized access to other users' data
 
 ## Browser Support
 
@@ -213,6 +219,42 @@ These rules ensure:
 - Safari
 - Edge
 - Mobile browsers (iOS Safari, Chrome for Android)
+
+## Cost
+
+**Free Tier (sufficient for personal/team use):**
+- Supabase: $0 (500MB database, 2GB bandwidth, 50K rows)
+- Vercel: $0 (unlimited static sites)
+- **Total: $0/month**
+
+## Troubleshooting
+
+### "Realtime subscription status: 403"
+- Make sure RLS is enabled on the `notes` table
+- Verify your anon key is correct
+
+### Notes not appearing
+- Check the browser console for errors
+- Verify the `user_id` column is populated correctly
+- Ensure RLS policy allows SELECT on `notes`
+
+### Google sign-in not working
+- In Supabase dashboard, go to **Authentication** → **Providers**
+- Enable Google provider
+- Add your Vercel URL to **Site URL** in Authentication settings
+
+### Offline mode not working
+- Supabase realtime requires an internet connection
+- For true offline support, consider using localStorage as a cache (not implemented in this version)
+
+## Migration from Firebase
+
+If you were using the Firebase version:
+1. Export your Firebase data
+2. Create a Supabase project
+3. Import your data into the `notes` table
+4. Update the credentials in `index.html`
+5. Deploy
 
 ## License
 

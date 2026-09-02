@@ -8,9 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -314,6 +312,10 @@
       OFFLINE: 'OFFLINE'
     };
 
+    // ==================== SUPABASE CONFIG ====================
+    const SUPABASE_URL = 'https://your-project-ref.supabase.co';
+    const SUPABASE_ANON_KEY = 'your-supabase-anon-key';
+
     // ==================== STATE ====================
     let state = {
       user: null,
@@ -322,21 +324,11 @@
       searchQuery: '',
       sortMode: 'recent',
       saveStatus: SAVE_STATUS.IDLE,
-      isOnline: true,
+      isOnline: navigator.onLine,
       isMobile: false,
       authMode: 'register',
-      lastNoteId: null
-    };
-
-    // ==================== FIREBASE CONFIG ====================
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      lastNoteId: null,
+      supabase: null
     };
 
     // ==================== DOM ELEMENTS ====================
@@ -378,85 +370,93 @@
       mobileOverlay: document.getElementById('mobileOverlay')
     };
 
-    // ==================== FIREBASE INITIALIZATION ====================
-    let firebaseApp = null;
-    let firebaseAuth = null;
-    let firebaseDatabase = null;
-    let notesRef = null;
+    // ==================== SUPABASE INITIALIZATION ====================
     let unsubscribeAuth = null;
     let unsubscribeNotes = null;
 
-    function initializeFirebase() {
+    function initializeSupabase() {
       try {
-        firebaseApp = firebase.initializeApp(firebaseConfig);
-        firebaseAuth = firebase.auth();
-        firebaseDatabase = firebase.database();
-
-        firebaseDatabase.enablePersistence().catch((err) => {
-          if (err.code === 'failed-precondition') {
-            // Multiple tabs open
-          } else if (err.code === 'unimplemented') {
-            // Browser doesn't support
-          }
-        });
-
-        unsubscribeAuth = firebaseAuth.onAuthStateChanged(handleAuthStateChanged);
-
-        firebaseDatabase.ref('.info/connected').on('value', (snapshot) => {
-          state.isOnline = snapshot.val() === true;
-          updateStatusIndicator();
-          if (state.isOnline) {
-            showToast('ONLINE');
-          } else {
-            showToast('OFFLINE');
-          }
-        });
-
-        console.log('Firebase initialized successfully');
+        state.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Set up auth state listener
+        unsubscribeAuth = state.supabase.auth.onAuthStateChange(handleAuthStateChanged);
+        
+        // Check initial online status
+        updateOnlineStatus();
+        
+        // Set up online/offline detection
+        window.addEventListener('online', () => updateOnlineStatus());
+        window.addEventListener('offline', () => updateOnlineStatus());
+        
+        console.log('Supabase initialized successfully');
       } catch (error) {
-        console.error('Firebase initialization error:', error);
+        console.error('Supabase initialization error:', error);
+      }
+    }
+
+    function updateOnlineStatus() {
+      state.isOnline = navigator.onLine;
+      updateStatusIndicator();
+      if (state.isOnline) {
+        showToast('ONLINE');
+        // Re-subscribe to realtime when back online
+        if (state.user && !unsubscribeNotes) {
+          setupNotesRealtime();
+        }
+      } else {
+        showToast('OFFLINE');
       }
     }
 
     // ==================== AUTH HANDLERS ====================
-    function handleAuthStateChanged(user) {
-      if (user) {
+    function handleAuthStateChanged(event, session) {
+      if (session) {
+        // User is signed in
         state.user = {
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName || user.email.split('@')[0]
+          uid: session.user.id,
+          email: session.user.email,
+          displayName: session.user.user_metadata?.user_name || session.user.email?.split('@')[0] || 'User'
         };
-
-        loadUserNotes(user.uid);
-
+        
+        // Load user notes
+        loadUserNotes(session.user.id);
+        
+        // Show app UI, hide auth
         elements.authContainer.style.display = 'none';
         elements.userSection.style.display = 'flex';
-
+        
+        // Update user info display
         updateUserDisplay();
-
+        
+        // Restore last selected note if available
         if (state.lastNoteId) {
           selectNote(state.lastNoteId);
         }
-
+        
         showToast('WELCOME BACK');
       } else {
+        // User is signed out
         state.user = null;
         state.notes = [];
         state.selectedNoteId = null;
-
+        
+        // Hide app UI, show auth
         elements.authContainer.style.display = 'flex';
         elements.userSection.style.display = 'none';
-
+        
+        // Clear editor
         clearEditor();
-
+        
+        // Unsubscribe from notes if was listening
         if (unsubscribeNotes) {
           unsubscribeNotes();
           unsubscribeNotes = null;
         }
-
+        
+        // Reset auth form
         resetAuthForm();
       }
-
+      
       updateUI();
     }
 
@@ -474,49 +474,74 @@
 
     async function handleAuthSubmit(e) {
       e.preventDefault();
-
+      
       const username = elements.authUsername.value.trim();
       const password = elements.authPassword.value;
-
+      
       if (!username || !password) {
         showAuthError('Please enter both username and password');
         return;
       }
-
+      
       if (state.authMode === 'register') {
+        // Register with username as email
         const email = usernameToEmail(username);
         try {
-          await firebaseAuth.createUserWithEmailAndPassword(email, password);
-          showAuthError('');
+          const { error } = await state.supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+              data: {
+                user_name: username
+              }
+            }
+          });
+          if (error) {
+            showAuthError(error.message);
+          } else {
+            showAuthError('');
+          }
         } catch (error) {
-          showAuthError(error.message.replace('Firebase: ', ''));
+          showAuthError(error.message);
         }
       } else {
+        // Login - try both username@domain and direct email
         let email = username;
         if (!email.includes('@')) {
           email = usernameToEmail(username);
         }
-
+        
         try {
-          await firebaseAuth.signInWithEmailAndPassword(email, password);
-          showAuthError('');
+          const { error } = await state.supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+          });
+          if (error) {
+            showAuthError(error.message);
+          } else {
+            showAuthError('');
+          }
         } catch (error) {
-          showAuthError(error.message.replace('Firebase: ', ''));
+          showAuthError(error.message);
         }
       }
     }
 
     async function handleGoogleSignIn() {
       try {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        await firebaseAuth.signInWithPopup(provider);
+        const { error } = await state.supabase.auth.signInWithOAuth({
+          provider: 'google'
+        });
+        if (error) {
+          showAuthError(error.message);
+        }
       } catch (error) {
-        showAuthError(error.message.replace('Firebase: ', ''));
+        showAuthError(error.message);
       }
     }
 
     function handleLogout() {
-      firebaseAuth.signOut().catch((error) => {
+      state.supabase.auth.signOut().catch((error) => {
         console.error('Logout error:', error);
       });
     }
@@ -548,31 +573,85 @@
 
     // ==================== NOTES HANDLERS ====================
     function loadUserNotes(uid) {
+      fetchNotes(uid);
+      setupNotesRealtime(uid);
+    }
+
+    async function fetchNotes(uid) {
+      const { data, error } = await state.supabase
+        .from('notes')
+        .select('*')
+        .eq('user_id', uid)
+        .order('updated_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching notes:', error);
+        return;
+      }
+      
+      state.notes = (data || []).map(note => ({
+        id: note.id,
+        title: note.title || 'Untitled',
+        content: note.content || '',
+        pinned: note.pinned || false,
+        createdAt: note.created_at ? new Date(note.created_at).getTime() : Date.now(),
+        updatedAt: note.updated_at ? new Date(note.updated_at).getTime() : Date.now()
+      }));
+      
+      sortNotes();
+      updateNotesList();
+      updateNotesCount();
+      
+      if (!state.selectedNoteId && state.notes.length > 0) {
+        selectNote(state.notes[0].id);
+      }
+    }
+
+    function setupNotesRealtime(uid) {
       if (unsubscribeNotes) {
         unsubscribeNotes();
       }
-
-      notesRef = firebaseDatabase.ref(`notes/${uid}`);
-
-      unsubscribeNotes = notesRef.on('value', (snapshot) => {
-        const notesData = snapshot.val() || {};
-        state.notes = Object.entries(notesData).map(([id, note]) => ({
-          id,
-          title: note.title || 'Untitled',
-          content: note.content || '',
-          pinned: note.pinned || false,
-          createdAt: note.createdAt || Date.now(),
-          updatedAt: note.updatedAt || Date.now()
-        }));
-
-        sortNotes();
-        updateNotesList();
-        updateNotesCount();
-
-        if (!state.selectedNoteId && state.notes.length > 0) {
-          selectNote(state.notes[0].id);
-        }
-      });
+      
+      unsubscribeNotes = state.supabase
+        .channel('notes_changes')
+        .on('postgres_changes', 
+          { event: '*', schema: 'public', table: 'notes', filter: `user_id=eq.${uid}` },
+          (payload) => {
+            const note = {
+              id: payload.new.id,
+              title: payload.new.title || 'Untitled',
+              content: payload.new.content || '',
+              pinned: payload.new.pinned || false,
+              createdAt: payload.new.created_at ? new Date(payload.new.created_at).getTime() : Date.now(),
+              updatedAt: payload.new.updated_at ? new Date(payload.new.updated_at).getTime() : Date.now()
+            };
+            
+            switch (payload.eventType) {
+              case 'INSERT':
+                state.notes.push(note);
+                break;
+              case 'UPDATE':
+                const index = state.notes.findIndex(n => n.id === note.id);
+                if (index !== -1) {
+                  state.notes[index] = note;
+                }
+                break;
+              case 'DELETE':
+                state.notes = state.notes.filter(n => n.id !== payload.old.id);
+                if (state.selectedNoteId === payload.old.id) {
+                  clearEditor();
+                }
+                break;
+            }
+            
+            sortNotes();
+            updateNotesList();
+            updateNotesCount();
+          }
+        )
+        .subscribe((status) => {
+          console.log('Realtime subscription status:', status);
+        });
     }
 
     function sortNotes() {
@@ -588,7 +667,8 @@
           state.notes.sort((a, b) => b.updatedAt - a.updatedAt);
           break;
       }
-
+      
+      // Pinned notes always come first
       state.notes.sort((a, b) => {
         if (a.pinned === b.pinned) return 0;
         return a.pinned ? -1 : 1;
@@ -603,182 +683,214 @@
       updateNotesList();
     }
 
-    function createNewNote() {
+    async function createNewNote() {
       if (!state.user) return;
-
-      const newNote = {
-        title: 'Untitled',
-        content: '',
-        pinned: false,
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-      };
-
-      const newNoteRef = notesRef.push();
-      newNoteRef.set(newNote).then(() => {
-        state.saveStatus = SAVE_STATUS.SAVED;
-        updateSaveStatus();
-        selectNote(newNoteRef.key);
-
-        setTimeout(() => {
-          elements.titleInput.focus();
-        }, 50);
-      }).catch((error) => {
+      
+      const { data, error } = await state.supabase
+        .from('notes')
+        .insert({
+          user_id: state.user.uid,
+          title: 'Untitled',
+          content: '',
+          pinned: false
+        })
+        .select();
+      
+      if (error) {
         console.error('Error creating note:', error);
         state.saveStatus = SAVE_STATUS.ERROR;
         updateSaveStatus();
-      });
+        return;
+      }
+      
+      if (data && data.length > 0) {
+        const newNote = {
+          id: data[0].id,
+          title: 'Untitled',
+          content: '',
+          pinned: false,
+          createdAt: new Date(data[0].created_at).getTime(),
+          updatedAt: new Date(data[0].updated_at).getTime()
+        };
+        
+        state.notes.push(newNote);
+        sortNotes();
+        state.saveStatus = SAVE_STATUS.SAVED;
+        updateSaveStatus();
+        selectNote(newNote.id);
+        
+        setTimeout(() => {
+          elements.titleInput.focus();
+        }, 50);
+      }
     }
 
     function selectNote(noteId) {
-      if (!state.notes.find(n => n.id === noteId)) return;
-
+      const note = state.notes.find(n => n.id === noteId);
+      if (!note) return;
+      
       state.selectedNoteId = noteId;
       state.lastNoteId = noteId;
-
-      const note = state.notes.find(n => n.id === noteId);
-      if (note) {
-        elements.titleInput.value = note.title;
-        elements.contentInput.value = note.content;
-
-        elements.emptyState.style.display = 'none';
-        elements.titleInput.style.display = 'block';
-        elements.contentInput.style.display = 'block';
-
-        elements.copyTitleBtn.style.display = 'inline-block';
-        elements.copyContentBtn.style.display = 'inline-block';
-        elements.exportBtn.style.display = 'inline-block';
-
-        updateCharCount();
-
-        state.saveStatus = SAVE_STATUS.SYNCED;
-        updateSaveStatus();
-      }
-
+      
+      elements.titleInput.value = note.title;
+      elements.contentInput.value = note.content;
+      
+      elements.emptyState.style.display = 'none';
+      elements.titleInput.style.display = 'block';
+      elements.contentInput.style.display = 'block';
+      
+      elements.copyTitleBtn.style.display = 'inline-block';
+      elements.copyContentBtn.style.display = 'inline-block';
+      elements.exportBtn.style.display = 'inline-block';
+      
+      updateCharCount();
+      
+      state.saveStatus = SAVE_STATUS.SYNCED;
+      updateSaveStatus();
+      
       updateNotesList();
     }
 
-    function deleteNote(noteId, e) {
+    async function deleteNote(noteId, e) {
       if (e) e.stopPropagation();
-
+      
       if (!state.user) return;
-
-      const noteRef = firebaseDatabase.ref(`notes/${state.user.uid}/${noteId}`);
-      noteRef.remove().then(() => {
+      
+      const { error } = await state.supabase
+        .from('notes')
+        .delete()
+        .eq('id', noteId);
+      
+      if (error) {
+        console.error('Error deleting note:', error);
+        showToast('ERROR DELETING NOTE');
+      } else {
         if (state.selectedNoteId === noteId) {
           clearEditor();
         }
         showToast('NOTE DELETED');
-      }).catch((error) => {
-        console.error('Error deleting note:', error);
-        showToast('ERROR DELETING NOTE');
-      });
+      }
     }
 
-    function togglePinNote(noteId, e) {
+    async function togglePinNote(noteId, e) {
       if (e) e.stopPropagation();
-
+      
       if (!state.user) return;
-
+      
       const note = state.notes.find(n => n.id === noteId);
       if (!note) return;
-
-      const noteRef = firebaseDatabase.ref(`notes/${state.user.uid}/${noteId}`);
-      noteRef.update({ pinned: !note.pinned }).then(() => {
-        sortNotes();
-        updateNotesList();
-      }).catch((error) => {
+      
+      const { error } = await state.supabase
+        .from('notes')
+        .update({ pinned: !note.pinned })
+        .eq('id', noteId);
+      
+      if (error) {
         console.error('Error toggling pin:', error);
-      });
+      } else {
+        // The realtime listener will update the state
+      }
     }
 
     function updateNoteTitle(title) {
       if (!state.selectedNoteId || !state.user) return;
-
+      
       const note = state.notes.find(n => n.id === state.selectedNoteId);
       if (!note) return;
-
+      
       note.title = title;
       note.updatedAt = Date.now();
-
+      
       debounceSave();
     }
 
     function updateNoteContent(content) {
       if (!state.selectedNoteId || !state.user) return;
-
+      
       const note = state.notes.find(n => n.id === state.selectedNoteId);
       if (!note) return;
-
+      
       note.content = content;
       note.updatedAt = Date.now();
-
+      
       updateCharCount();
       debounceSave();
     }
 
     let saveTimeout = null;
-
+    
     function debounceSave() {
       if (saveTimeout) clearTimeout(saveTimeout);
-
+      
       state.saveStatus = SAVE_STATUS.SAVING;
       updateSaveStatus();
-
+      
       saveTimeout = setTimeout(() => {
         saveNote();
       }, SAVE_DEBOUNCE_MS);
     }
 
-    function saveNote() {
-      if (!state.selectedNoteId || !state.user || !state.isOnline) {
-        state.saveStatus = state.isOnline ? SAVE_STATUS.ERROR : SAVE_STATUS.OFFLINE;
+    async function saveNote() {
+      if (!state.selectedNoteId || !state.user) {
+        state.saveStatus = SAVE_STATUS.ERROR;
         updateSaveStatus();
         return;
       }
-
+      
+      if (!state.isOnline) {
+        state.saveStatus = SAVE_STATUS.OFFLINE;
+        updateSaveStatus();
+        // Queue for later
+        setTimeout(() => saveNote(), 5000);
+        return;
+      }
+      
       const note = state.notes.find(n => n.id === state.selectedNoteId);
       if (!note) return;
-
-      const noteRef = firebaseDatabase.ref(`notes/${state.user.uid}/${state.selectedNoteId}`);
-      noteRef.update({
-        title: note.title,
-        content: note.content,
-        updatedAt: note.updatedAt
-      }).then(() => {
+      
+      const { error } = await state.supabase
+        .from('notes')
+        .update({
+          title: note.title,
+          content: note.content,
+          updated_at: new Date(note.updatedAt).toISOString()
+        })
+        .eq('id', state.selectedNoteId);
+      
+      if (error) {
+        console.error('Error saving note:', error);
+        state.saveStatus = SAVE_STATUS.ERROR;
+        updateSaveStatus();
+      } else {
         state.saveStatus = SAVE_STATUS.SAVED;
         updateSaveStatus();
         setTimeout(() => {
           state.saveStatus = SAVE_STATUS.SYNCED;
           updateSaveStatus();
         }, 500);
-      }).catch((error) => {
-        console.error('Error saving note:', error);
-        state.saveStatus = SAVE_STATUS.ERROR;
-        updateSaveStatus();
-      });
+      }
     }
 
     function clearEditor() {
       state.selectedNoteId = null;
       state.lastNoteId = null;
-
+      
       elements.titleInput.value = '';
       elements.contentInput.value = '';
-
+      
       elements.emptyState.style.display = 'block';
       elements.titleInput.style.display = 'none';
       elements.contentInput.style.display = 'none';
-
+      
       elements.copyTitleBtn.style.display = 'none';
       elements.copyContentBtn.style.display = 'none';
       elements.exportBtn.style.display = 'none';
-
+      
       elements.charCount.textContent = '';
-
+      
       state.saveStatus = SAVE_STATUS.IDLE;
       updateSaveStatus();
-
+      
       updateNotesList();
     }
 
@@ -790,8 +902,8 @@
 
     function getFilteredNotes() {
       if (!state.searchQuery) return state.notes;
-
-      return state.notes.filter(note =>
+      
+      return state.notes.filter(note => 
         note.title.toLowerCase().includes(state.searchQuery) ||
         note.content.toLowerCase().includes(state.searchQuery)
       );
@@ -807,9 +919,9 @@
     // ==================== UI UPDATES ====================
     function updateNotesList() {
       const filteredNotes = getFilteredNotes();
-
+      
       elements.notesList.innerHTML = '';
-
+      
       if (filteredNotes.length === 0) {
         const emptyDiv = document.createElement('div');
         emptyDiv.className = 'empty-state';
@@ -822,7 +934,7 @@
           const noteEl = document.createElement('div');
           noteEl.className = `note-item ${state.selectedNoteId === note.id ? 'selected' : ''} ${note.pinned ? 'pinned' : ''}`;
           noteEl.onclick = () => selectNote(note.id);
-
+          
           noteEl.innerHTML = `
             <div class="note-pin ${note.pinned ? 'pinned' : ''}" onclick="togglePinNote('${note.id}', event)">
               ${note.pinned ? '&#9679;' : '&#9675;'}
@@ -833,11 +945,11 @@
             </div>
             <button class="note-delete" onclick="deleteNote('${note.id}', event)">DELETE</button>
           `;
-
+          
           elements.notesList.appendChild(noteEl);
         });
       }
-
+      
       updateNotesCount();
     }
 
@@ -862,7 +974,7 @@
 
     function updateUI() {
       const isAuthed = !!state.user;
-
+      
       if (isAuthed) {
         elements.authContainer.style.display = 'none';
         elements.userSection.style.display = 'flex';
@@ -876,7 +988,7 @@
     function copyTitle() {
       const title = elements.titleInput.value;
       if (!title) return;
-
+      
       navigator.clipboard.writeText(title).then(() => {
         showToast('TITLE COPIED');
       }).catch(() => {
@@ -887,7 +999,7 @@
     function copyContent() {
       const content = elements.contentInput.value;
       if (!content) return;
-
+      
       navigator.clipboard.writeText(content).then(() => {
         showToast('CONTENT COPIED');
       }).catch(() => {
@@ -897,10 +1009,10 @@
 
     function exportNote() {
       if (!state.selectedNoteId) return;
-
+      
       const note = state.notes.find(n => n.id === state.selectedNoteId);
       if (!note) return;
-
+      
       const blob = new Blob([note.content], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -910,14 +1022,14 @@
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-
+      
       showToast('NOTE EXPORTED');
     }
 
     function showToast(message) {
       elements.toast.textContent = message;
       elements.toast.classList.add('show');
-
+      
       setTimeout(() => {
         elements.toast.classList.remove('show');
       }, 2000);
@@ -936,7 +1048,7 @@
 
     function detectMobile() {
       state.isMobile = window.innerWidth <= 768;
-
+      
       if (state.isMobile) {
         elements.sidebar.classList.remove('open');
         elements.mobileOverlay.classList.remove('show');
@@ -946,7 +1058,7 @@
     // ==================== SWIPE TO DELETE (Mobile) ====================
     let touchStartX = 0;
     let touchEndX = 0;
-
+    
     function handleTouchStart(e, noteId) {
       touchStartX = e.changedTouches[0].screenX;
     }
@@ -959,7 +1071,7 @@
     function handleSwipe(noteId) {
       const swipeThreshold = 50;
       const diff = touchStartX - touchEndX;
-
+      
       if (diff > swipeThreshold) {
         deleteNote(noteId);
       }
@@ -1016,13 +1128,13 @@
     function navigateNotes(direction) {
       const filteredNotes = getFilteredNotes();
       if (filteredNotes.length === 0) return;
-
+      
       const currentIndex = filteredNotes.findIndex(n => n.id === state.selectedNoteId);
       let newIndex = currentIndex + direction;
-
+      
       if (newIndex < 0) newIndex = filteredNotes.length - 1;
       if (newIndex >= filteredNotes.length) newIndex = 0;
-
+      
       selectNote(filteredNotes[newIndex].id);
     }
 
@@ -1039,30 +1151,30 @@
       elements.googleSignIn.addEventListener('click', handleGoogleSignIn);
       elements.authToggleBtn.addEventListener('click', toggleAuthMode);
       elements.logoutBtn.addEventListener('click', handleLogout);
-
+      
       elements.newNoteBtn.addEventListener('click', createNewNote);
       elements.sortToggle.addEventListener('click', cycleSortMode);
-
+      
       elements.searchInput.addEventListener('input', (e) => {
         updateSearch(e.target.value);
         elements.searchClear.style.display = e.target.value ? 'block' : 'none';
       });
       elements.searchClear.addEventListener('click', clearSearch);
-
+      
       elements.titleInput.addEventListener('input', (e) => updateNoteTitle(e.target.value));
       elements.contentInput.addEventListener('input', (e) => updateNoteContent(e.target.value));
-
+      
       elements.copyTitleBtn.addEventListener('click', copyTitle);
       elements.copyContentBtn.addEventListener('click', copyContent);
       elements.exportBtn.addEventListener('click', exportNote);
-
+      
       elements.menuBtn.addEventListener('click', toggleSidebar);
       elements.mobileOverlay.addEventListener('click', closeSidebar);
-
+      
       document.addEventListener('keydown', handleKeyDown);
-
+      
       window.addEventListener('resize', detectMobile);
-
+      
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
           if (saveTimeout) {
@@ -1071,7 +1183,7 @@
           }
         }
       });
-
+      
       window.addEventListener('beforeunload', () => {
         if (saveTimeout) {
           clearTimeout(saveTimeout);
@@ -1083,11 +1195,11 @@
     // ==================== INITIALIZATION ====================
     function init() {
       detectMobile();
-      initializeFirebase();
+      initializeSupabase();
       setupEventListeners();
       updateUI();
       updateStatusIndicator();
-      console.log('Simple Transfer initialized');
+      console.log('Simple Transfer initialized with Supabase');
     }
 
     if (document.readyState === 'loading') {
