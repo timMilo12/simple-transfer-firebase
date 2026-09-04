@@ -448,9 +448,10 @@
         clearEditor();
         
         // Unsubscribe from notes if was listening
-        if (unsubscribeNotes) {
-          unsubscribeNotes();
-          unsubscribeNotes = null;
+        if (notesChannel) {
+          notesChannel.unsubscribe();
+          notesChannel = null;
+        }
         }
         
         // Reset auth form
@@ -607,12 +608,20 @@
       }
     }
 
+    let notesChannel = null;
+
     function setupNotesRealtime(uid) {
-      if (unsubscribeNotes) {
-        unsubscribeNotes();
+      // Unsubscribe from previous channel if it exists
+      if (notesChannel) {
+        notesChannel.unsubscribe();
       }
       
-      unsubscribeNotes = state.supabase
+      // Clear any existing subscription reference
+      if (unsubscribeNotes) {
+        unsubscribeNotes = null;
+      }
+      
+      notesChannel = state.supabase
         .channel('notes_changes')
         .on('postgres_changes', 
           { event: '*', schema: 'public', table: 'notes', filter: `user_id=eq.${uid}` },
