@@ -401,7 +401,7 @@
         showToast('ONLINE');
         // Re-subscribe to realtime when back online
         if (state.user && !unsubscribeNotes) {
-          setupNotesRealtime();
+          setupNotesRealtime(state.user.uid);
         }
       } else {
         showToast('OFFLINE');
