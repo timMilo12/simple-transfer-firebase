@@ -824,6 +824,15 @@
     }
 
     @media (max-width: 768px) {
+      .mobile-overlay {
+        display: none;
+      }
+      .mobile-overlay.show {
+        display: block;
+      }
+    }
+
+    @media (max-width: 768px) {
       .sidebar {
         transform: translateX(-100%);
         z-index: 1000;
@@ -1003,8 +1012,8 @@
 
   <!-- MAIN SCREEN -->
   <div class="main-screen" id="mainScreen">
+    <div class="mobile-overlay" id="mobileOverlay"></div>
     <div class="app-container">
-      <div class="mobile-overlay" id="mobileOverlay"></div>
       <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
           <div class="logo">
