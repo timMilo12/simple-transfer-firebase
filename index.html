@@ -183,12 +183,14 @@
       border: none;
       color: var(--text-tertiary);
       cursor: pointer;
-      font-size: 12px;
-      padding: 2px;
+      font-size: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      letter-spacing: 0.5px;
+      padding: 2px 4px;
     }
 
     .password-eye:hover {
-      color: var(--text-secondary);
+      color: var(--accent);
     }
 
     .login-btn {
@@ -990,7 +992,7 @@
             <label class="login-input-label">PASSWORD</label>
             <input type="password" class="login-input-field" id="passwordInput" 
                    placeholder="Enter your password" autocomplete="current-password" required>
-            <button type="button" class="password-eye" id="passwordToggle">&#128065;</button>
+            <button type="button" class="password-eye" id="passwordToggle">SHOW</button>
           </div>
           
           <button type="submit" class="login-btn" id="authSubmit">LOGIN</button>
@@ -1296,7 +1298,7 @@
     function togglePasswordVisibility() {
       state.isPasswordVisible = !state.isPasswordVisible;
       elements.passwordInput.type = state.isPasswordVisible ? 'text' : 'password';
-      elements.passwordToggle.textContent = state.isPasswordVisible ? '&#128064;' : '&#128065;';
+      elements.passwordToggle.textContent = state.isPasswordVisible ? 'HIDE' : 'SHOW';
     }
 
     async function handleAuthSubmit(e) {
