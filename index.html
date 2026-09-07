@@ -171,14 +171,13 @@
     }
 
     .login-password-toggle .login-input-field {
-      padding-right: 50px;
+      padding-right: 48px;
     }
 
     .password-eye {
       position: absolute;
       right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
+      top: 12px;
       background: none;
       border: none;
       color: var(--text-tertiary);
@@ -186,7 +185,7 @@
       font-size: 10px;
       font-family: 'IBM Plex Mono', monospace;
       letter-spacing: 0.5px;
-      padding: 4px 6px;
+      padding: 2px 4px;
     }
 
     .password-eye:hover {
@@ -314,18 +313,17 @@
     /* ==================== MAIN SCREEN ==================== */
     .main-screen {
       display: none;
-      height: 100vh;
-      width: 100%;
     }
 
     .main-screen.visible {
-      display: block;
+      display: flex;
       height: 100vh;
     }
 
     .app-container {
       display: flex;
       height: 100%;
+      width: 100%;
     }
 
     .sidebar {
@@ -1030,8 +1028,8 @@
 
   <!-- MAIN SCREEN -->
   <div class="main-screen" id="mainScreen">
-    <div class="mobile-overlay" id="mobileOverlay"></div>
     <div class="app-container">
+      <div class="mobile-overlay" id="mobileOverlay"></div>
       <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
           <div class="logo">
