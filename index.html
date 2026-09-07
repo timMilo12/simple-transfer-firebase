@@ -166,31 +166,7 @@
       border-color: var(--accent);
     }
 
-    .login-password-toggle {
-      position: relative;
-    }
 
-    .login-password-toggle .login-input-field {
-      padding-right: 40px;
-    }
-
-    .password-eye {
-      position: absolute;
-      right: 12px;
-      top: 10px;
-      background: none;
-      border: none;
-      color: var(--text-tertiary);
-      cursor: pointer;
-      font-size: 10px;
-      font-family: 'IBM Plex Mono', monospace;
-      letter-spacing: 0.5px;
-      padding: 2px 4px;
-    }
-
-    .password-eye:hover {
-      color: var(--accent);
-    }
 
     .login-btn {
       background: transparent;
@@ -987,11 +963,10 @@
                    placeholder="Enter your email" autocomplete="username" required>
           </div>
           
-          <div class="login-input-group login-password-toggle">
+          <div class="login-input-group">
             <label class="login-input-label">PASSWORD</label>
             <input type="password" class="login-input-field" id="passwordInput" 
                    placeholder="Enter your password" autocomplete="current-password" required>
-            <button type="button" class="password-eye" id="passwordToggle">SHOW</button>
           </div>
           
           <button type="submit" class="login-btn" id="authSubmit">LOGIN</button>
@@ -1115,7 +1090,7 @@
       authMode: 'login',
       lastNoteId: null,
       supabase: null,
-      isPasswordVisible: false
+
     };
 
     // ==================== DOM ELEMENTS ====================
@@ -1129,7 +1104,7 @@
       emailLabel: document.getElementById('emailLabel'),
       emailInput: document.getElementById('emailInput'),
       passwordInput: document.getElementById('passwordInput'),
-      passwordToggle: document.getElementById('passwordToggle'),
+
       authSubmit: document.getElementById('authSubmit'),
       authError: document.getElementById('authError'),
       googleSignIn: document.getElementById('googleSignIn'),
@@ -1294,11 +1269,7 @@
       elements.authError.textContent = message;
     }
 
-    function togglePasswordVisibility() {
-      state.isPasswordVisible = !state.isPasswordVisible;
-      elements.passwordInput.type = state.isPasswordVisible ? 'text' : 'password';
-      elements.passwordToggle.textContent = state.isPasswordVisible ? 'HIDE' : 'SHOW';
-    }
+
 
     async function handleAuthSubmit(e) {
       e.preventDefault();
@@ -1953,7 +1924,7 @@
       elements.registerTab.addEventListener('click', switchToRegisterMode);
       elements.authForm.addEventListener('submit', handleAuthSubmit);
       elements.googleSignIn.addEventListener('click', handleGoogleSignIn);
-      elements.passwordToggle.addEventListener('click', togglePasswordVisibility);
+
       
       // Main Screen Events
       elements.logoutBtn.addEventListener('click', handleLogout);
