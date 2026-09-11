@@ -116,6 +116,10 @@
       text-transform: uppercase;
       transition: all 0.15s;
       border-bottom: 2px solid transparent;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .login-tab.active {
@@ -152,10 +156,12 @@
       border: 1px solid var(--divider);
       color: var(--text);
       font-size: 13px;
-      padding: 10px 12px;
+      padding: 12px 12px;
       font-family: 'IBM Plex Mono', monospace;
       outline: none;
       transition: border-color 0.15s;
+      min-height: 44px;
+      width: 100%;
     }
 
     .login-input-field::placeholder {
@@ -180,6 +186,10 @@
       padding: 12px 16px;
       transition: all 0.15s;
       margin-top: 8px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .login-btn:hover {
@@ -246,6 +256,7 @@
       text-transform: uppercase;
       padding: 12px 16px;
       transition: all 0.15s;
+      min-height: 44px;
     }
 
     .login-social-btn:hover {
@@ -379,8 +390,12 @@
       font-size: 11px;
       font-family: 'IBM Plex Mono', monospace;
       letter-spacing: 0.5px;
-      padding: 3px 6px;
+      padding: 8px 12px;
       border-radius: 2px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .logout-btn:hover {
@@ -403,6 +418,9 @@
       font-size: 12px;
       padding: 6px 0;
       font-family: 'IBM Plex Mono', monospace;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
     }
 
     .search-input::placeholder {
@@ -425,7 +443,12 @@
       cursor: pointer;
       font-size: 12px;
       display: none;
-      padding: 2px;
+      padding: 8px;
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .search-clear:hover {
@@ -453,6 +476,8 @@
       gap: 4px;
       cursor: pointer;
       user-select: none;
+      padding: 8px;
+      min-height: 44px;
     }
 
     .sort-toggle:hover {
@@ -478,6 +503,9 @@
       margin: 8px 20px;
       text-align: left;
       transition: all 0.15s;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
     }
 
     .new-note-btn:hover {
@@ -516,6 +544,7 @@
       gap: 8px;
       transition: background 0.1s;
       position: relative;
+      min-height: 60px;
     }
 
     .note-item:hover {
@@ -547,6 +576,9 @@
       font-size: 8px;
       color: var(--text-tertiary);
       font-family: 'IBM Plex Mono', monospace;
+      padding: 8px;
+      min-width: 28px;
+      min-height: 28px;
     }
 
     .note-item:hover .note-pin,
@@ -565,6 +597,9 @@
     .note-content {
       flex: 1;
       min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     .note-title {
@@ -599,7 +634,12 @@
       font-size: 11px;
       opacity: 0;
       transition: opacity 0.1s;
-      padding: 2px;
+      padding: 8px;
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .note-item:hover .note-delete {
@@ -612,13 +652,13 @@
 
     .status-indicator {
       position: fixed;
-      bottom: 16px;
+      bottom: 80px;
       right: 16px;
       width: 10px;
       height: 10px;
       background: var(--text-tertiary);
       border-radius: 50%;
-      z-index: 1000;
+      z-index: 999;
       box-shadow: 0 0 4px currentColor;
     }
 
@@ -666,7 +706,12 @@
       cursor: pointer;
       font-size: 14px;
       display: none;
-      padding: 4px;
+      padding: 8px;
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .save-status {
@@ -690,9 +735,14 @@
       font-size: 10px;
       font-family: 'IBM Plex Mono', monospace;
       letter-spacing: 0.5px;
-      padding: 4px 8px;
+      padding: 8px 12px;
       border-radius: 2px;
       transition: all 0.15s;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
     }
 
     .action-btn:hover {
@@ -788,7 +838,7 @@
 
     .toast {
       position: fixed;
-      bottom: 48px;
+      bottom: 56px;
       right: 16px;
       background: var(--hover);
       border: 1px solid var(--divider);
@@ -801,6 +851,7 @@
       opacity: 0;
       transform: translateY(10px);
       transition: opacity 0.2s, transform 0.2s;
+      max-width: 90vw;
     }
 
     .toast.show {
@@ -816,7 +867,7 @@
       right: 0;
       bottom: 0;
       background: rgba(0,0,0,0.5);
-      z-index: 999;
+      z-index: 998;
     }
 
     .mobile-overlay.show {
@@ -842,9 +893,8 @@
         transform: translateX(0);
       }
       .menu-btn {
-        display: block;
+        display: flex;
         font-size: 18px;
-        padding: 6px;
       }
       .top-bar-left {
         gap: 8px;
@@ -888,19 +938,19 @@
       }
       .login-input-field {
         font-size: 13px;
-        padding: 11px 12px;
+        padding: 12px 12px;
       }
       .login-btn {
-        padding: 13px 16px;
+        padding: 12px 16px;
         font-size: 12px;
       }
       .toast {
-        bottom: 24px;
+        bottom: 64px;
         right: 8px;
         font-size: 12px;
       }
       .status-indicator {
-        bottom: 20px;
+        bottom: 88px;
         right: 20px;
         width: 8px;
         height: 8px;
@@ -909,7 +959,7 @@
         font-size: 11px;
       }
       .action-btn {
-        padding: 6px 10px;
+        padding: 8px 12px;
         font-size: 11px;
       }
     }
@@ -923,6 +973,18 @@
         max-width: 320px;
         padding: 24px 16px;
       }
+      .login-input-field {
+        font-size: 16px;
+        padding: 14px 12px;
+      }
+      .login-btn {
+        padding: 14px 16px;
+        font-size: 12px;
+      }
+      .login-social-btn {
+        padding: 14px 16px;
+        font-size: 11px;
+      }
       .editor {
         padding: 12px;
       }
@@ -934,15 +996,41 @@
       }
       .top-bar {
         padding: 0 8px;
+        min-height: 56px;
       }
       .top-bar-right {
-        display: none;
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+      }
+      .action-btn {
+        padding: 8px 10px;
+        font-size: 10px;
+        min-height: 36px;
       }
       .notes-count {
         font-size: 11px;
       }
       .sort-label {
         font-size: 11px;
+      }
+      .menu-btn {
+        min-width: 40px;
+        min-height: 40px;
+      }
+      .note-item {
+        min-height: 64px;
+      }
+      .toast {
+        bottom: 70px;
+        right: 8px;
+        font-size: 12px;
+        left: 8px;
+      }
+      .status-indicator {
+        bottom: 98px;
+        right: auto;
+        left: 16px;
       }
     }
   </style>
@@ -998,1001 +1086,475 @@
             SIGN IN WITH GOOGLE
           </button>
         </div>
-        
-        <div class="login-loading" id="loginLoading" style="display: none;">
-          <div class="spinner"></div>
-        </div>
-      </div>
-      
-      <div class="login-footer">
-        Simple Transfer v2.0
       </div>
     </div>
   </div>
 
-  <!-- MAIN SCREEN -->
+  <!-- MAIN APP -->
   <div class="main-screen" id="mainScreen">
     <div class="mobile-overlay" id="mobileOverlay"></div>
     <div class="app-container">
-      <div class="sidebar" id="sidebar">
+      <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
           <div class="logo">
             <div class="logo-dot"></div>
             SIMPLE TRANSFER
           </div>
         </div>
+
         <div class="user-section">
           <div class="user-info">
-            <div class="user-initial" id="userInitial">?</div>
-            <span class="user-name" id="userName">User</span>
+            <div class="user-initial" id="userInitial"></div>
+            <div class="user-name" id="userName"></div>
           </div>
-          <button class="logout-btn" id="logoutBtn">LOGOUT</button>
+          <button type="button" class="logout-btn" id="logoutBtn" title="Logout">LOGOUT</button>
         </div>
+
         <div class="search-container">
-          <input type="text" class="search-input" id="searchInput" placeholder="SEARCH NOTES...">
-          <button class="search-clear" id="searchClear">X</button>
+          <input type="text" class="search-input" id="searchInput" placeholder="Search notes...">
+          <button type="button" class="search-clear" id="searchClear" title="Clear search">&times;</button>
         </div>
+
         <div class="notes-header">
           <span class="notes-count" id="notesCount">0 NOTES</span>
-          <div class="sort-toggle" id="sortToggle">
-            <span class="sort-label" id="sortLabel">RECENT</span>
+          <div class="sort-toggle" id="sortToggle" title="Toggle sort order">
+            <span class="sort-label">LATEST</span>
+            <span>▼</span>
           </div>
         </div>
-        <button class="new-note-btn" id="newNoteBtn">+ NEW NOTE</button>
+
+        <button type="button" class="new-note-btn" id="newNoteBtn">+ NEW NOTE</button>
+
         <div class="notes-list" id="notesList"></div>
-      </div>
-      <div class="main-content">
+      </aside>
+
+      <main class="main-content">
         <div class="top-bar">
           <div class="top-bar-left">
-            <button class="menu-btn" id="menuBtn">&#9776;</button>
-            <span class="save-status" id="saveStatus">SELECT A NOTE TO EDIT</span>
+            <button type="button" class="menu-btn" id="menuBtn" title="Toggle menu">☰</button>
+            <span class="save-status" id="saveStatus">SAVED</span>
           </div>
           <div class="top-bar-right">
-            <button class="action-btn" id="copyTitleBtn" style="display: none;">COPY TITLE</button>
-            <button class="action-btn" id="copyContentBtn" style="display: none;">COPY CONTENT</button>
-            <button class="action-btn" id="exportBtn" style="display: none;">EXPORT</button>
+            <button type="button" class="action-btn" id="shareBtn" title="Share">SHARE</button>
+            <button type="button" class="action-btn" id="exportBtn" title="Export">EXPORT</button>
           </div>
         </div>
+
         <div class="editor-container">
-          <div class="editor" id="editor">
-            <div class="empty-state" id="emptyState">SELECT A NOTE TO EDIT</div>
-            <textarea class="title-input" id="titleInput" placeholder="Untitled" style="display: none;"></textarea>
-            <textarea class="content-input" id="contentInput" placeholder="Start typing..." style="display: none;"></textarea>
+          <div class="editor">
+            <input type="text" class="title-input" id="titleInput" placeholder="Note Title...">
+            <textarea class="content-input" id="contentInput" placeholder="Start typing..."></textarea>
+            <div class="empty-state" id="emptyState">No note selected</div>
           </div>
           <div class="editor-footer">
-            <span class="char-count" id="charCount"></span>
+            <span class="char-count" id="charCount">0 characters</span>
           </div>
         </div>
-      </div>
-      <div class="status-indicator" id="statusIndicator"></div>
-      <div class="toast" id="toast"></div>
+      </main>
     </div>
+
+    <div class="toast" id="toast"></div>
+    <div class="status-indicator" id="statusIndicator"></div>
   </div>
 
   <script>
-    // ==================== CONFIGURATION ====================
-    const SAVE_DEBOUNCE_MS = 500;
-    const SORT_MODES = ['recent', 'created', 'az'];
-    const SAVE_STATUS = {
-      IDLE: 'SELECT A NOTE TO EDIT',
-      SYNCED: 'SYNCED',
-      SAVING: 'SAVING...',
-      SAVED: 'SAVED',
-      ERROR: 'ERROR',
-      OFFLINE: 'OFFLINE'
-    };
+    // ==================== GLOBALS ====================
+    const supabase = window.supabase.createClient(
+      'https://ucbvzklhyvzwfpsuvjeb.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYnZ6a2xoeXZ6d2Zwc3V2amViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjU5MzEyNjQsImV4cCI6MjA0MTUwNzI2NH0.ggpn5qIbYKgZwcYvBLCHzFDGzEsD3TzZvdL9L9C8gps'
+    );
 
-    // ==================== SUPABASE CONFIG ====================
-    const SUPABASE_URL = 'https://riraqxbkyzyfwjslqgxl.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpcmFxeGJreXp5Zndqc2xxZ3hsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzNjU5ODgsImV4cCI6MjEwMzk0MTk4OH0.SSEkkqNbuyTPProOr7q1cx7iKaWSlP0cRfNEdc25Cpk';
-
-    // ==================== STATE ====================
-    let state = {
-      user: null,
-      notes: [],
-      selectedNoteId: null,
-      searchQuery: '',
-      sortMode: 'recent',
-      saveStatus: SAVE_STATUS.IDLE,
-      isOnline: navigator.onLine,
-      isMobile: false,
-      authMode: 'login',
-      lastNoteId: null,
-      supabase: null,
-
-    };
+    let currentUser = null;
+    let currentNoteId = null;
+    let notes = [];
+    let sortAscending = false;
+    let searchQuery = '';
+    let saveTimeout = null;
+    let originalNoteContent = {};
 
     // ==================== DOM ELEMENTS ====================
-    const elements = {
-      // Login Screen
-      loginScreen: document.getElementById('loginScreen'),
-      mainScreen: document.getElementById('mainScreen'),
-      loginTab: document.getElementById('loginTab'),
-      registerTab: document.getElementById('registerTab'),
-      authForm: document.getElementById('authForm'),
-      emailLabel: document.getElementById('emailLabel'),
-      emailInput: document.getElementById('emailInput'),
-      passwordInput: document.getElementById('passwordInput'),
+    const loginScreen = document.getElementById('loginScreen');
+    const mainScreen = document.getElementById('mainScreen');
+    const authForm = document.getElementById('authForm');
+    const emailInput = document.getElementById('emailInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const authSubmit = document.getElementById('authSubmit');
+    const authError = document.getElementById('authError');
+    const loginTab = document.getElementById('loginTab');
+    const registerTab = document.getElementById('registerTab');
+    const emailLabel = document.getElementById('emailLabel');
 
-      authSubmit: document.getElementById('authSubmit'),
-      authError: document.getElementById('authError'),
-      googleSignIn: document.getElementById('googleSignIn'),
-      loginLoading: document.getElementById('loginLoading'),
-      
-      // Main Screen
-      sidebar: document.getElementById('sidebar'),
-      userSection: document.getElementById('userSection'),
-      userInitial: document.getElementById('userInitial'),
-      userName: document.getElementById('userName'),
-      logoutBtn: document.getElementById('logoutBtn'),
-      searchInput: document.getElementById('searchInput'),
-      searchClear: document.getElementById('searchClear'),
-      notesCount: document.getElementById('notesCount'),
-      sortToggle: document.getElementById('sortToggle'),
-      sortLabel: document.getElementById('sortLabel'),
-      newNoteBtn: document.getElementById('newNoteBtn'),
-      notesList: document.getElementById('notesList'),
-      menuBtn: document.getElementById('menuBtn'),
-      saveStatus: document.getElementById('saveStatus'),
-      copyTitleBtn: document.getElementById('copyTitleBtn'),
-      copyContentBtn: document.getElementById('copyContentBtn'),
-      exportBtn: document.getElementById('exportBtn'),
-      editor: document.getElementById('editor'),
-      emptyState: document.getElementById('emptyState'),
-      titleInput: document.getElementById('titleInput'),
-      contentInput: document.getElementById('contentInput'),
-      charCount: document.getElementById('charCount'),
-      statusIndicator: document.getElementById('statusIndicator'),
-      toast: document.getElementById('toast'),
-      mobileOverlay: document.getElementById('mobileOverlay')
-    };
+    const sidebar = document.getElementById('sidebar');
+    const menuBtn = document.getElementById('menuBtn');
+    const mobileOverlay = document.getElementById('mobileOverlay');
+    const newNoteBtn = document.getElementById('newNoteBtn');
+    const notesList = document.getElementById('notesList');
+    const searchInput = document.getElementById('searchInput');
+    const searchClear = document.getElementById('searchClear');
+    const notesCount = document.getElementById('notesCount');
+    const sortToggle = document.getElementById('sortToggle');
+    const titleInput = document.getElementById('titleInput');
+    const contentInput = document.getElementById('contentInput');
+    const emptyState = document.getElementById('emptyState');
+    const charCount = document.getElementById('charCount');
+    const userInitial = document.getElementById('userInitial');
+    const userName = document.getElementById('userName');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const saveStatus = document.getElementById('saveStatus');
+    const toast = document.getElementById('toast');
+    const statusIndicator = document.getElementById('statusIndicator');
+    const googleSignIn = document.getElementById('googleSignIn');
+    const shareBtn = document.getElementById('shareBtn');
+    const exportBtn = document.getElementById('exportBtn');
 
-    // ==================== SUPABASE INITIALIZATION ====================
-    let notesChannel = null;
+    // ==================== EVENT LISTENERS ====================
+    authForm.addEventListener('submit', handleAuth);
+    loginTab.addEventListener('click', () => switchAuthTab('login'));
+    registerTab.addEventListener('click', () => switchAuthTab('register'));
+    newNoteBtn.addEventListener('click', createNewNote);
+    searchInput.addEventListener('input', handleSearch);
+    searchClear.addEventListener('click', clearSearch);
+    sortToggle.addEventListener('click', toggleSort);
+    titleInput.addEventListener('input', handleTitleChange);
+    contentInput.addEventListener('input', handleContentChange);
+    logoutBtn.addEventListener('click', logout);
+    menuBtn.addEventListener('click', toggleSidebar);
+    mobileOverlay.addEventListener('click', closeSidebar);
+    googleSignIn.addEventListener('click', handleGoogleSignIn);
+    shareBtn.addEventListener('click', handleShare);
+    exportBtn.addEventListener('click', handleExport);
 
-    function initializeSupabase() {
-      try {
-        state.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        // Set up auth state listener
-        state.supabase.auth.onAuthStateChange(handleAuthStateChanged);
-        
-        // Check initial online status
-        updateOnlineStatus();
-        
-        // Set up online/offline detection
-        window.addEventListener('online', () => updateOnlineStatus());
-        window.addEventListener('offline', () => updateOnlineStatus());
-        
-        console.log('Supabase initialized successfully');
-      } catch (error) {
-        console.error('Supabase initialization error:', error);
-      }
-    }
-
-    function updateOnlineStatus() {
-      state.isOnline = navigator.onLine;
-      updateStatusIndicator();
-      if (state.isOnline) {
-        showToast('ONLINE');
-        // Re-subscribe to realtime when back online
-        if (state.user && !notesChannel) {
-          setupNotesRealtime(state.user.id);
-        }
-      } else {
-        showToast('OFFLINE');
-      }
-    }
-
-    // ==================== AUTH HANDLERS - COMPLETELY REWRITTEN ====================
-    
-    function handleAuthStateChanged(event, session) {
-      if (session) {
-        // User is signed in
-        state.user = {
-          id: session.user.id,
-          email: session.user.email,
-          displayName: session.user.user_metadata?.user_name || 
-                       session.user.email?.split('@')[0] || 
-                       'User'
-        };
-        
-        // Load user notes
-        loadUserNotes(session.user.id);
-        
-        // Show main screen, hide login
-        elements.loginScreen.classList.add('hidden');
-        elements.mainScreen.classList.add('visible');
-        
-        // Update user info display
-        updateUserDisplay();
-        
-        // Restore last selected note if available
-        if (state.lastNoteId) {
-          selectNote(state.lastNoteId);
-        }
-        
-        showToast('WELCOME BACK');
-      } else {
-        // User is signed out
-        state.user = null;
-        state.notes = [];
-        state.selectedNoteId = null;
-        
-        // Show login screen, hide main
-        elements.loginScreen.classList.remove('hidden');
-        elements.mainScreen.classList.remove('visible');
-        
-        // Clear editor
-        clearEditor();
-        
-        // Unsubscribe from notes if was listening
-        if (notesChannel) {
-          notesChannel.unsubscribe();
-          notesChannel = null;
-        }
-        
-        // Reset auth form
-        resetAuthForm();
-      }
-      
-      updateUI();
-    }
-
-    function updateUserDisplay() {
-      if (state.user) {
-        const initial = state.user.displayName.charAt(0).toUpperCase();
-        elements.userInitial.textContent = initial;
-        elements.userName.textContent = state.user.displayName;
-      }
-    }
-
-    function switchToLoginMode() {
-      state.authMode = 'login';
-      elements.loginTab.classList.add('active');
-      elements.registerTab.classList.remove('active');
-      elements.authSubmit.textContent = 'LOGIN';
-      elements.emailLabel.textContent = 'EMAIL';
-      elements.emailInput.placeholder = 'Enter your email';
-      showAuthError('');
-    }
-
-    function switchToRegisterMode() {
-      state.authMode = 'register';
-      elements.loginTab.classList.remove('active');
-      elements.registerTab.classList.add('active');
-      elements.authSubmit.textContent = 'REGISTER';
-      elements.emailLabel.textContent = 'EMAIL';
-      elements.emailInput.placeholder = 'Enter your email';
-      showAuthError('');
-    }
-
-    function resetAuthForm() {
-      elements.authForm.reset();
-      switchToLoginMode();
-      elements.loginLoading.style.display = 'none';
-      elements.authSubmit.disabled = false;
-    }
-
-    function showAuthError(message) {
-      elements.authError.textContent = message;
-    }
-
-
-
-    async function handleAuthSubmit(e) {
+    // ==================== AUTH FUNCTIONS ====================
+    async function handleAuth(e) {
       e.preventDefault();
-      
-      const email = elements.emailInput.value.trim();
-      const password = elements.passwordInput.value;
-      
-      if (!email || !password) {
-        showAuthError('Please enter both email and password');
-        return;
-      }
-      
-      // Validate email format
-      if (!isValidEmail(email)) {
-        showAuthError('Please enter a valid email address');
-        return;
-      }
-      
-      if (password.length < 6) {
-        showAuthError('Password must be at least 6 characters');
-        return;
-      }
-      
-      // Show loading state
-      elements.loginLoading.style.display = 'flex';
-      elements.authSubmit.disabled = true;
-      showAuthError('');
-      
+      const email = emailInput.value;
+      const password = passwordInput.value;
+      const isLogin = loginTab.classList.contains('active');
+
+      authSubmit.disabled = true;
+      authError.textContent = '';
+
       try {
-        if (state.authMode === 'register') {
-          // Register new user
-          const { error } = await state.supabase.auth.signUp({
-            email: email,
-            password: password,
-            options: {
-              data: {
-                user_name: email.split('@')[0]
-              }
-            }
-          });
-          
-          if (error) {
-            showAuthError(error.message);
-          } else {
-            // Registration successful, switch to login mode
-            showAuthError('');
-            switchToLoginMode();
-          }
+        let result;
+        if (isLogin) {
+          result = await supabase.auth.signInWithPassword({ email, password });
         } else {
-          // Login existing user
-          const { error } = await state.supabase.auth.signInWithPassword({
-            email: email,
-            password: password
-          });
-          
-          if (error) {
-            showAuthError(error.message);
-          }
+          result = await supabase.auth.signUp({ email, password });
         }
+
+        if (result.error) throw result.error;
+        showToast(isLogin ? 'Logged in successfully' : 'Account created! Check your email.');
       } catch (error) {
-        showAuthError(error.message);
+        authError.textContent = error.message;
       } finally {
-        elements.loginLoading.style.display = 'none';
-        elements.authSubmit.disabled = false;
+        authSubmit.disabled = false;
       }
     }
 
-    function isValidEmail(email) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      return emailRegex.test(email);
+    function switchAuthTab(tab) {
+      const isLogin = tab === 'login';
+      loginTab.classList.toggle('active');
+      registerTab.classList.toggle('active');
+      authSubmit.textContent = isLogin ? 'LOGIN' : 'REGISTER';
+      emailLabel.textContent = isLogin ? 'EMAIL' : 'EMAIL';
+      authError.textContent = '';
     }
 
     async function handleGoogleSignIn() {
       try {
-        elements.loginLoading.style.display = 'flex';
-        const { error } = await state.supabase.auth.signInWithOAuth({
-          provider: 'google'
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: window.location.origin },
         });
-        if (error) {
-          showAuthError(error.message);
-        }
+        if (error) throw error;
       } catch (error) {
-        showAuthError(error.message);
-      } finally {
-        elements.loginLoading.style.display = 'none';
+        authError.textContent = error.message;
       }
     }
 
-    function handleLogout() {
-      state.supabase.auth.signOut().catch((error) => {
-        console.error('Logout error:', error);
-      });
-    }
-
-    // ==================== NOTES HANDLERS ====================
-    function loadUserNotes(uid) {
-      fetchNotes(uid);
-      setupNotesRealtime(uid);
-    }
-
-    async function fetchNotes(uid) {
-      const { data, error } = await state.supabase
-        .from('notes')
-        .select('*')
-        .eq('user_id', uid)
-        .order('updated_at', { ascending: false });
-      
+    async function logout() {
+      const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error('Error fetching notes:', error);
-        return;
-      }
-      
-      state.notes = (data || []).map(note => ({
-        id: note.id,
-        title: note.title || 'Untitled',
-        content: note.content || '',
-        pinned: note.pinned || false,
-        createdAt: note.created_at ? new Date(note.created_at).getTime() : Date.now(),
-        updatedAt: note.updated_at ? new Date(note.updated_at).getTime() : Date.now()
-      }));
-      
-      sortNotes();
-      updateNotesList();
-      updateNotesCount();
-      
-      if (!state.selectedNoteId && state.notes.length > 0) {
-        selectNote(state.notes[0].id);
+        showToast('Logout failed');
       }
     }
 
-    function setupNotesRealtime(uid) {
-      // Unsubscribe from previous channel if it exists
-      if (notesChannel) {
-        notesChannel.unsubscribe();
+    async function checkAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        currentUser = session.user;
+        loginScreen.classList.add('hidden');
+        mainScreen.classList.add('visible');
+        setupUI();
+        loadNotes();
+        setupRealtimeListener();
+        window.addEventListener('online', () => updateStatusIndicator(true));
+        window.addEventListener('offline', () => updateStatusIndicator(false));
+        updateStatusIndicator(navigator.onLine);
       }
-      
-      notesChannel = state.supabase
-        .channel('notes_changes')
-        .on('postgres_changes', 
-          { event: '*', schema: 'public', table: 'notes', filter: `user_id=eq.${uid}` },
-          (payload) => {
-            const note = {
-              id: payload.new.id,
-              title: payload.new.title || 'Untitled',
-              content: payload.new.content || '',
-              pinned: payload.new.pinned || false,
-              createdAt: payload.new.created_at ? new Date(payload.new.created_at).getTime() : Date.now(),
-              updatedAt: payload.new.updated_at ? new Date(payload.new.updated_at).getTime() : Date.now()
-            };
-            
-            switch (payload.eventType) {
-              case 'INSERT':
-                state.notes.push(note);
-                break;
-              case 'UPDATE':
-                const index = state.notes.findIndex(n => n.id === note.id);
-                if (index !== -1) {
-                  state.notes[index] = note;
-                }
-                break;
-              case 'DELETE':
-                state.notes = state.notes.filter(n => n.id !== payload.old.id);
-                if (state.selectedNoteId === payload.old.id) {
-                  clearEditor();
-                }
-                break;
-            }
-            
-            sortNotes();
-            updateNotesList();
-            updateNotesCount();
-          }
-        )
-        .subscribe((status) => {
-          console.log('Realtime subscription status:', status);
-        });
     }
 
-    function sortNotes() {
-      switch (state.sortMode) {
-        case 'created':
-          state.notes.sort((a, b) => b.createdAt - a.createdAt);
-          break;
-        case 'az':
-          state.notes.sort((a, b) => a.title.localeCompare(b.title, 'en', { sensitivity: 'base' }));
-          break;
-        case 'recent':
-        default:
-          state.notes.sort((a, b) => b.updatedAt - a.updatedAt);
-          break;
-      }
-      
-      // Pinned notes always come first
-      state.notes.sort((a, b) => {
-        if (a.pinned === b.pinned) return 0;
-        return a.pinned ? -1 : 1;
-      });
-    }
+    supabase.auth.onAuthStateChange(() => checkAuth());
 
-    function cycleSortMode() {
-      const currentIndex = SORT_MODES.indexOf(state.sortMode);
-      state.sortMode = SORT_MODES[(currentIndex + 1) % SORT_MODES.length];
-      elements.sortLabel.textContent = state.sortMode.toUpperCase();
-      sortNotes();
-      updateNotesList();
-    }
-
+    // ==================== NOTE FUNCTIONS ====================
     async function createNewNote() {
-      if (!state.user) return;
-      
-      const { data, error } = await state.supabase
-        .from('notes')
-        .insert({
-          user_id: state.user.id,
-          title: 'Untitled',
-          content: '',
-          pinned: false
+      try {
+        const { data, error } = await supabase
+          .from('notes')
+          .insert([{ user_id: currentUser.id, title: 'Untitled', content: '' }])
+          .select();
+
+        if (error) throw error;
+        notes.unshift(data[0]);
+        currentNoteId = data[0].id;
+        originalNoteContent = { title: data[0].title, content: data[0].content };
+        renderNotes();
+        displayNote(data[0]);
+        closeSidebar();
+      } catch (error) {
+        showToast('Failed to create note');
+      }
+    }
+
+    async function loadNotes() {
+      try {
+        const { data, error } = await supabase
+          .from('notes')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .order('updated_at', { ascending: sortAscending });
+
+        if (error) throw error;
+        notes = data || [];
+        renderNotes();
+      } catch (error) {
+        showToast('Failed to load notes');
+      }
+    }
+
+    function setupRealtimeListener() {
+      supabase
+        .channel('notes_channel')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'notes', filter: `user_id=eq.${currentUser.id}` }, (payload) => {
+          if (payload.eventType === 'INSERT') {
+            if (!notes.find(n => n.id === payload.new.id)) {
+              notes.unshift(payload.new);
+              renderNotes();
+            }
+          } else if (payload.eventType === 'UPDATE') {
+            const index = notes.findIndex(n => n.id === payload.new.id);
+            if (index !== -1) {
+              notes[index] = payload.new;
+              if (currentNoteId === payload.new.id) {
+                displayNote(payload.new);
+              }
+              renderNotes();
+            }
+          } else if (payload.eventType === 'DELETE') {
+            notes = notes.filter(n => n.id !== payload.old.id);
+            if (currentNoteId === payload.old.id) {
+              currentNoteId = null;
+              titleInput.value = '';
+              contentInput.value = '';
+              emptyState.style.display = 'flex';
+            }
+            renderNotes();
+          }
         })
-        .select();
-      
-      if (error) {
-        console.error('Error creating note:', error);
-        state.saveStatus = SAVE_STATUS.ERROR;
-        updateSaveStatus();
-        return;
-      }
-      
-      if (data && data.length > 0) {
-        const newNote = {
-          id: data[0].id,
-          title: 'Untitled',
-          content: '',
-          pinned: false,
-          createdAt: new Date(data[0].created_at).getTime(),
-          updatedAt: new Date(data[0].updated_at).getTime()
-        };
-        
-        state.notes.push(newNote);
-        sortNotes();
-        state.saveStatus = SAVE_STATUS.SAVED;
-        updateSaveStatus();
-        selectNote(newNote.id);
-        
-        setTimeout(() => {
-          elements.titleInput.focus();
-        }, 50);
-      }
+        .subscribe();
     }
 
-    function selectNote(noteId) {
-      const note = state.notes.find(n => n.id === noteId);
-      if (!note) return;
-      
-      state.selectedNoteId = noteId;
-      state.lastNoteId = noteId;
-      
-      elements.titleInput.value = note.title;
-      elements.contentInput.value = note.content;
-      
-      elements.emptyState.style.display = 'none';
-      elements.titleInput.style.display = 'block';
-      elements.contentInput.style.display = 'block';
-      
-      elements.copyTitleBtn.style.display = 'inline-block';
-      elements.copyContentBtn.style.display = 'inline-block';
-      elements.exportBtn.style.display = 'inline-block';
-      
+    function renderNotes() {
+      const filtered = notes.filter(n => n.title.toLowerCase().includes(searchQuery.toLowerCase()) || n.content.toLowerCase().includes(searchQuery.toLowerCase()));
+      notesCount.textContent = `${filtered.length} ${filtered.length === 1 ? 'NOTE' : 'NOTES'}`;
+      notesList.innerHTML = filtered.map(note => `
+        <div class="note-item ${note.id === currentNoteId ? 'selected' : ''} ${note.pinned ? 'pinned' : ''}" data-id="${note.id}">
+          <div class="note-pin ${note.pinned ? 'pinned' : ''}" data-id="${note.id}" title="Pin note">📌</div>
+          <div class="note-content">
+            <div class="note-title">${note.title || 'Untitled'}</div>
+            <div class="note-preview">${note.content || '(empty)'}</div>
+          </div>
+          <button type="button" class="note-delete" data-id="${note.id}" title="Delete note">×</button>
+        </div>
+      `).join('');
+
+      document.querySelectorAll('.note-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const noteId = item.dataset.id;
+          currentNoteId = noteId;
+          const note = notes.find(n => n.id === noteId);
+          displayNote(note);
+          renderNotes();
+          closeSidebar();
+        });
+      });
+
+      document.querySelectorAll('.note-pin').forEach(pin => {
+        pin.addEventListener('click', (e) => {
+          e.stopPropagation();
+          togglePin(pin.dataset.id);
+        });
+      });
+
+      document.querySelectorAll('.note-delete').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          deleteNote(btn.dataset.id);
+        });
+      });
+    }
+
+    function displayNote(note) {
+      titleInput.value = note.title;
+      contentInput.value = note.content;
+      originalNoteContent = { title: note.title, content: note.content };
       updateCharCount();
-      
-      state.saveStatus = SAVE_STATUS.SYNCED;
-      updateSaveStatus();
-      
-      updateNotesList();
+      emptyState.style.display = 'none';
+      titleInput.style.display = 'block';
+      contentInput.style.display = 'block';
     }
 
-    async function deleteNote(noteId, e) {
-      if (e) e.stopPropagation();
-      
-      if (!state.user) return;
-      
-      const { error } = await state.supabase
-        .from('notes')
-        .delete()
-        .eq('id', noteId);
-      
-      if (error) {
-        console.error('Error deleting note:', error);
-        showToast('ERROR DELETING NOTE');
-      } else {
-        if (state.selectedNoteId === noteId) {
-          clearEditor();
-        }
-        showToast('NOTE DELETED');
-      }
+    async function handleTitleChange() {
+      saveStatus.textContent = 'SAVING...';
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => saveNote(), 1000);
     }
 
-    async function togglePinNote(noteId, e) {
-      if (e) e.stopPropagation();
-      
-      if (!state.user) return;
-      
-      const note = state.notes.find(n => n.id === noteId);
-      if (!note) return;
-      
-      const { error } = await state.supabase
-        .from('notes')
-        .update({ pinned: !note.pinned })
-        .eq('id', noteId);
-      
-      if (error) {
-        console.error('Error toggling pin:', error);
-      }
-    }
-
-    function updateNoteTitle(title) {
-      if (!state.selectedNoteId || !state.user) return;
-      
-      const note = state.notes.find(n => n.id === state.selectedNoteId);
-      if (!note) return;
-      
-      note.title = title;
-      note.updatedAt = Date.now();
-      
-      debounceSave();
-    }
-
-    function updateNoteContent(content) {
-      if (!state.selectedNoteId || !state.user) return;
-      
-      const note = state.notes.find(n => n.id === state.selectedNoteId);
-      if (!note) return;
-      
-      note.content = content;
-      note.updatedAt = Date.now();
-      
+    async function handleContentChange() {
       updateCharCount();
-      debounceSave();
-    }
-
-    let saveTimeout = null;
-    
-    function debounceSave() {
-      if (saveTimeout) clearTimeout(saveTimeout);
-      
-      state.saveStatus = SAVE_STATUS.SAVING;
-      updateSaveStatus();
-      
-      saveTimeout = setTimeout(() => {
-        saveNote();
-      }, SAVE_DEBOUNCE_MS);
+      saveStatus.textContent = 'SAVING...';
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => saveNote(), 1000);
     }
 
     async function saveNote() {
-      if (!state.selectedNoteId || !state.user) {
-        state.saveStatus = SAVE_STATUS.ERROR;
-        updateSaveStatus();
+      if (!currentNoteId) return;
+      const title = titleInput.value || 'Untitled';
+      const content = contentInput.value;
+
+      if (title === originalNoteContent.title && content === originalNoteContent.content) {
+        saveStatus.textContent = 'SAVED';
         return;
       }
-      
-      if (!state.isOnline) {
-        state.saveStatus = SAVE_STATUS.OFFLINE;
-        updateSaveStatus();
-        setTimeout(() => saveNote(), 5000);
-        return;
-      }
-      
-      const note = state.notes.find(n => n.id === state.selectedNoteId);
-      if (!note) return;
-      
-      const { error } = await state.supabase
-        .from('notes')
-        .update({
-          title: note.title,
-          content: note.content,
-          updated_at: new Date(note.updatedAt).toISOString()
-        })
-        .eq('id', state.selectedNoteId);
-      
-      if (error) {
-        console.error('Error saving note:', error);
-        state.saveStatus = SAVE_STATUS.ERROR;
-        updateSaveStatus();
-      } else {
-        state.saveStatus = SAVE_STATUS.SAVED;
-        updateSaveStatus();
-        setTimeout(() => {
-          state.saveStatus = SAVE_STATUS.SYNCED;
-          updateSaveStatus();
-        }, 500);
+
+      try {
+        const { error } = await supabase
+          .from('notes')
+          .update({ title, content, updated_at: new Date() })
+          .eq('id', currentNoteId);
+
+        if (error) throw error;
+        originalNoteContent = { title, content };
+        saveStatus.textContent = 'SAVED';
+      } catch (error) {
+        saveStatus.textContent = 'ERROR';
       }
     }
 
-    function clearEditor() {
-      state.selectedNoteId = null;
-      state.lastNoteId = null;
-      
-      elements.titleInput.value = '';
-      elements.contentInput.value = '';
-      
-      elements.emptyState.style.display = 'block';
-      elements.titleInput.style.display = 'none';
-      elements.contentInput.style.display = 'none';
-      
-      elements.copyTitleBtn.style.display = 'none';
-      elements.copyContentBtn.style.display = 'none';
-      elements.exportBtn.style.display = 'none';
-      
-      elements.charCount.textContent = '';
-      
-      state.saveStatus = SAVE_STATUS.IDLE;
-      updateSaveStatus();
-      
-      updateNotesList();
+    async function deleteNote(noteId) {
+      if (!confirm('Delete this note?')) return;
+      try {
+        const { error } = await supabase.from('notes').delete().eq('id', noteId);
+        if (error) throw error;
+        showToast('Note deleted');
+      } catch (error) {
+        showToast('Failed to delete note');
+      }
     }
 
-    // ==================== SEARCH HANDLERS ====================
-    function updateSearch(query) {
-      state.searchQuery = query.toLowerCase();
-      updateNotesList();
+    async function togglePin(noteId) {
+      const note = notes.find(n => n.id === noteId);
+      try {
+        const { error } = await supabase
+          .from('notes')
+          .update({ pinned: !note.pinned })
+          .eq('id', noteId);
+
+        if (error) throw error;
+      } catch (error) {
+        showToast('Failed to pin note');
+      }
     }
 
-    function getFilteredNotes() {
-      if (!state.searchQuery) return state.notes;
-      
-      return state.notes.filter(note => 
-        note.title.toLowerCase().includes(state.searchQuery) ||
-        note.content.toLowerCase().includes(state.searchQuery)
-      );
+    function handleSearch() {
+      searchQuery = searchInput.value;
+      searchClear.style.display = searchQuery ? 'flex' : 'none';
+      renderNotes();
     }
 
     function clearSearch() {
-      state.searchQuery = '';
-      elements.searchInput.value = '';
-      elements.searchClear.style.display = 'none';
-      updateNotesList();
+      searchInput.value = '';
+      searchQuery = '';
+      searchClear.style.display = 'none';
+      renderNotes();
     }
 
-    // ==================== UI UPDATES ====================
-    function updateNotesList() {
-      const filteredNotes = getFilteredNotes();
-      
-      elements.notesList.innerHTML = '';
-      
-      if (filteredNotes.length === 0) {
-        const emptyDiv = document.createElement('div');
-        emptyDiv.className = 'empty-state';
-        emptyDiv.textContent = state.searchQuery ? 'NO NOTES FOUND' : 'NO NOTES YET';
-        emptyDiv.style.padding = '20px';
-        emptyDiv.style.textAlign = 'center';
-        elements.notesList.appendChild(emptyDiv);
-      } else {
-        filteredNotes.forEach(note => {
-          const noteEl = document.createElement('div');
-          noteEl.className = `note-item ${state.selectedNoteId === note.id ? 'selected' : ''} ${note.pinned ? 'pinned' : ''}`;
-          noteEl.onclick = () => selectNote(note.id);
-          
-          noteEl.innerHTML = `
-            <div class="note-pin ${note.pinned ? 'pinned' : ''}" onclick="togglePinNote('${note.id}', event)">
-              ${note.pinned ? '&#9679;' : '&#9675;'}
-            </div>
-            <div class="note-content">
-              <div class="note-title">${escapeHtml(note.title)}</div>
-              <div class="note-preview">${escapeHtml(note.content.substring(0, 50))}</div>
-            </div>
-            <button class="note-delete" onclick="deleteNote('${note.id}', event)">DELETE</button>
-          `;
-          
-          elements.notesList.appendChild(noteEl);
-        });
-      }
-      
-      updateNotesCount();
-    }
-
-    function updateNotesCount() {
-      const total = state.notes.length;
-      const pinned = state.notes.filter(n => n.pinned).length;
-      elements.notesCount.textContent = `${total} NOTES${pinned > 0 ? ` (${pinned} PINNED)` : ''}`;
-    }
-
-    function updateSaveStatus() {
-      elements.saveStatus.textContent = state.saveStatus;
+    function toggleSort() {
+      sortAscending = !sortAscending;
+      loadNotes();
     }
 
     function updateCharCount() {
-      const content = elements.contentInput.value;
-      elements.charCount.textContent = content ? `${content.length} CHARS` : '';
+      charCount.textContent = `${contentInput.value.length} characters`;
     }
 
-    function updateStatusIndicator() {
-      elements.statusIndicator.className = `status-indicator ${state.isOnline ? 'online' : 'offline'}`;
+    function setupUI() {
+      userInitial.textContent = currentUser.email?.[0].toUpperCase() || '?';
+      userName.textContent = currentUser.email || 'User';
     }
 
-    function updateUI() {
-      const isAuthed = !!state.user;
-      
-      if (isAuthed) {
-        elements.loginScreen.classList.add('hidden');
-        elements.mainScreen.classList.add('visible');
+    function handleShare() {
+      if (!currentNoteId) {
+        showToast('No note selected');
+        return;
+      }
+      const note = notes.find(n => n.id === currentNoteId);
+      const text = `${note.title}\n\n${note.content}`;
+      if (navigator.share) {
+        navigator.share({ title: note.title, text });
       } else {
-        elements.loginScreen.classList.remove('hidden');
-        elements.mainScreen.classList.remove('visible');
+        navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard'));
       }
     }
 
-    // ==================== ACTION HANDLERS ====================
-    function copyTitle() {
-      const title = elements.titleInput.value;
-      if (!title) return;
-      
-      navigator.clipboard.writeText(title).then(() => {
-        showToast('TITLE COPIED');
-      }).catch(() => {
-        showToast('COPY FAILED');
-      });
-    }
-
-    function copyContent() {
-      const content = elements.contentInput.value;
-      if (!content) return;
-      
-      navigator.clipboard.writeText(content).then(() => {
-        showToast('CONTENT COPIED');
-      }).catch(() => {
-        showToast('COPY FAILED');
-      });
-    }
-
-    function exportNote() {
-      if (!state.selectedNoteId) return;
-      
-      const note = state.notes.find(n => n.id === state.selectedNoteId);
-      if (!note) return;
-      
-      const blob = new Blob([note.content], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${note.title || 'note'}.txt`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
-      showToast('NOTE EXPORTED');
+    function handleExport() {
+      if (!currentNoteId) {
+        showToast('No note selected');
+        return;
+      }
+      const note = notes.find(n => n.id === currentNoteId);
+      const element = document.createElement('a');
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(`${note.title}\n\n${note.content}`));
+      element.setAttribute('download', `${note.title || 'note'}.txt`);
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+      showToast('Note exported');
     }
 
     function showToast(message) {
-      elements.toast.textContent = message;
-      elements.toast.classList.add('show');
-      
-      setTimeout(() => {
-        elements.toast.classList.remove('show');
-      }, 2000);
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
-    // ==================== MOBILE HANDLERS ====================
     function toggleSidebar() {
-      elements.sidebar.classList.toggle('open');
-      elements.mobileOverlay.classList.toggle('show');
+      sidebar.classList.toggle('open');
+      mobileOverlay.classList.toggle('show');
     }
 
     function closeSidebar() {
-      elements.sidebar.classList.remove('open');
-      elements.mobileOverlay.classList.remove('show');
+      sidebar.classList.remove('open');
+      mobileOverlay.classList.remove('show');
     }
 
-    function detectMobile() {
-      state.isMobile = window.innerWidth <= 768;
-      
-      if (state.isMobile) {
-        elements.sidebar.classList.remove('open');
-        elements.mobileOverlay.classList.remove('show');
-      } else {
-        elements.sidebar.classList.add('open');
-        elements.mobileOverlay.classList.remove('show');
-      }
+    function updateStatusIndicator(online) {
+      statusIndicator.classList.toggle('online', online);
+      statusIndicator.classList.toggle('offline', !online);
     }
 
-    // ==================== KEYBOARD SHORTCUTS ====================
-    function handleKeyDown(e) {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-        if (e.key === 'Escape') {
-          if (document.activeElement === elements.searchInput) {
-            elements.searchInput.blur();
-          }
-        }
-        if (e.key === 'Tab' && e.target === elements.titleInput) {
-          e.preventDefault();
-          elements.contentInput.focus();
-        }
-        return;
-      }
-
-      switch (e.key) {
-        case 'n':
-        case 'N':
-          createNewNote();
-          break;
-        case '/':
-          elements.searchInput.focus();
-          e.preventDefault();
-          break;
-        case 'ArrowUp':
-          navigateNotes(-1);
-          e.preventDefault();
-          break;
-        case 'ArrowDown':
-          navigateNotes(1);
-          e.preventDefault();
-          break;
-        case 'Enter':
-          if (state.selectedNoteId) {
-            elements.contentInput.focus();
-          } else if (state.notes.length > 0) {
-            selectNote(state.notes[0].id);
-          }
-          e.preventDefault();
-          break;
-        case 'Escape':
-          if (document.activeElement === elements.searchInput) {
-            elements.searchInput.blur();
-          }
-          break;
-      }
-    }
-
-    function navigateNotes(direction) {
-      const filteredNotes = getFilteredNotes();
-      if (filteredNotes.length === 0) return;
-      
-      const currentIndex = filteredNotes.findIndex(n => n.id === state.selectedNoteId);
-      let newIndex = currentIndex + direction;
-      
-      if (newIndex < 0) newIndex = filteredNotes.length - 1;
-      if (newIndex >= filteredNotes.length) newIndex = 0;
-      
-      selectNote(filteredNotes[newIndex].id);
-    }
-
-    // ==================== UTILITY FUNCTIONS ====================
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
-
-    // ==================== EVENT LISTENERS ====================
-    function setupEventListeners() {
-      // Login Screen Events
-      elements.loginTab.addEventListener('click', switchToLoginMode);
-      elements.registerTab.addEventListener('click', switchToRegisterMode);
-      elements.authForm.addEventListener('submit', handleAuthSubmit);
-      elements.googleSignIn.addEventListener('click', handleGoogleSignIn);
-
-      
-      // Main Screen Events
-      elements.logoutBtn.addEventListener('click', handleLogout);
-      elements.newNoteBtn.addEventListener('click', createNewNote);
-      elements.sortToggle.addEventListener('click', cycleSortMode);
-      
-      elements.searchInput.addEventListener('input', (e) => {
-        updateSearch(e.target.value);
-        elements.searchClear.style.display = e.target.value ? 'block' : 'none';
-      });
-      elements.searchClear.addEventListener('click', clearSearch);
-      
-      elements.titleInput.addEventListener('input', (e) => updateNoteTitle(e.target.value));
-      elements.contentInput.addEventListener('input', (e) => updateNoteContent(e.target.value));
-      
-      elements.copyTitleBtn.addEventListener('click', copyTitle);
-      elements.copyContentBtn.addEventListener('click', copyContent);
-      elements.exportBtn.addEventListener('click', exportNote);
-      
-      elements.menuBtn.addEventListener('click', toggleSidebar);
-      elements.mobileOverlay.addEventListener('click', closeSidebar);
-      
-      document.addEventListener('keydown', handleKeyDown);
-      
-      window.addEventListener('resize', detectMobile);
-      detectMobile();
-      
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') {
-          if (saveTimeout) {
-            clearTimeout(saveTimeout);
-            saveNote();
-          }
-        }
-      });
-      
-      window.addEventListener('beforeunload', () => {
-        if (saveTimeout) {
-          clearTimeout(saveTimeout);
-          saveNote();
-        }
-      });
-    }
-
-    // ==================== INITIALIZATION ====================
-    function init() {
-      detectMobile();
-      initializeSupabase();
-      setupEventListeners();
-      updateUI();
-      updateStatusIndicator();
-      console.log('Simple Transfer v2.0 initialized with Supabase');
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init);
-    } else {
-      init();
-    }
+    checkAuth();
   </script>
 </body>
 </html>
